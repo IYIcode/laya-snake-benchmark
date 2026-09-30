@@ -5,6 +5,17 @@
 这是一个**可验证**的实测项目：所有结论背后都有原始档案，页面可以直接在浏览器里复跑。
 配套视频已发布，本仓库是它的证据与复现入口。
 
+## 🌐 直接在线体验（不用装任何东西）
+
+| 页面 | 地址 |
+|---|---|
+| **五路选手驾驶舱（主入口）** | https://iyicode.github.io/laya-snake-benchmark/laya-snake-cockpit.html |
+| 我本人的 141 通关局逐手回放 | https://iyicode.github.io/laya-snake-benchmark/laya-snake-myrun.html |
+| 完整 17 页报告 | https://iyicode.github.io/laya-snake-benchmark/laya-ppt.html |
+| 站点首页（数字一览） | https://iyicode.github.io/laya-snake-benchmark/ |
+
+> 若上面的 Pages 打不开，可改用仓库路径：`https://github.com/IYIcode/laya-snake-benchmark`（clone 后本地起 `python -m http.server`）。
+
 ---
 
 ## 一句话结论
