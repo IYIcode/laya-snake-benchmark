@@ -1,0 +1,198 @@
+[
+ {
+  "name": "A_question",
+  "compliant": true,
+  "mean_food": 0.0,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "causes": [
+   "wall",
+   "body",
+   "wall",
+   "body",
+   "wall",
+   "body"
+  ],
+  "greedy_acc_mean": 0.305,
+  "top1_mean": 0.309,
+  "sample_hist": {
+   "UP": 0,
+   "DOWN": 6,
+   "LEFT": 0,
+   "RIGHT": 0
+  }
+ },
+ {
+  "name": "C_coord_eq",
+  "compliant": true,
+  "mean_food": 0.0,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "causes": [
+   "body",
+   "body",
+   "body",
+   "body",
+   "body",
+   "wall"
+  ],
+  "greedy_acc_mean": 0.444,
+  "top1_mean": 0.298,
+  "sample_hist": {
+   "UP": 1,
+   "DOWN": 1,
+   "LEFT": 0,
+   "RIGHT": 0
+  }
+ },
+ {
+  "name": "D_egocentric",
+  "compliant": true,
+  "mean_food": 0.17,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "causes": [
+   "wall",
+   "wall",
+   "wall",
+   "wall",
+   "wall",
+   "wall"
+  ],
+  "greedy_acc_mean": 0.111,
+  "top1_mean": 0.324,
+  "sample_hist": {
+   "UP": 0,
+   "DOWN": 6,
+   "LEFT": 0,
+   "RIGHT": 5
+  }
+ },
+ {
+  "name": "F_coords_rich",
+  "compliant": true,
+  "mean_food": 0.0,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "causes": [
+   "body",
+   "body",
+   "body",
+   "body",
+   "body",
+   "body"
+  ],
+  "greedy_acc_mean": 0.5,
+  "top1_mean": 0.326,
+  "sample_hist": {
+   "UP": 1,
+   "DOWN": 1,
+   "LEFT": 0,
+   "RIGHT": 0
+  }
+ },
+ {
+  "name": "G_food_first",
+  "compliant": true,
+  "mean_food": 0.0,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "causes": [
+   "body",
+   "body",
+   "body",
+   "body",
+   "body",
+   "body"
+  ],
+  "greedy_acc_mean": 0.083,
+  "top1_mean": 0.292,
+  "sample_hist": {
+   "UP": 0,
+   "DOWN": 0,
+   "LEFT": 1,
+   "RIGHT": 1
+  }
+ },
+ {
+  "name": "H_masked",
+  "compliant": true,
+  "mean_food": 0.0,
+  "foods": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "causes": [
+   "alive",
+   "alive",
+   "alive",
+   "alive",
+   "alive",
+   "alive"
+  ],
+  "greedy_acc_mean": 0.292,
+  "top1_mean": 0.422,
+  "sample_hist": {
+   "UP": 79,
+   "DOWN": 73,
+   "LEFT": 73,
+   "RIGHT": 75
+  }
+ },
+ {
+  "name": "E_relabel_CTRL",
+  "compliant": false,
+  "note": "把贪心方向标成UP=答案透出，仅作诊断对照",
+  "mean_food": 5.5,
+  "foods": [
+   4,
+   7,
+   5,
+   5,
+   6,
+   6
+  ],
+  "causes": [
+   "body",
+   "body",
+   "body",
+   "body",
+   "body",
+   "body"
+  ]
+ }
+]

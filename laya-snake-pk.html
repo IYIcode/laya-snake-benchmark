@@ -1,0 +1,338 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>贪吃蛇同屏 PK · 五方案排行榜</title>
+<style>
+  body { margin:0; background:#07070f; color:#ccc; font:13px/1.4 "Microsoft YaHei",Consolas,monospace; }
+  h1 { font-size:16px; margin:10px 16px 2px; color:#eee; }
+  .sub { margin:0 16px 8px; color:#667; font-size:12px; }
+  #engine { font-size:12px; margin:0 16px 6px; } .ok{color:#0c6;} .bad{color:#e05;}
+  .lanes { display:flex; gap:8px; padding:0 12px; align-items:flex-start; }
+  .lane { background:#0b0b18; border:1px solid #1e1e38; border-radius:8px; padding:5px; width:168px; }
+  .lane h2 { font-size:11px; margin:0 0 3px; color:#dde; font-weight:600; line-height:1.2; }
+  .lane h2 small { display:block; color:#667; font-weight:400; font-size:10px; }
+  canvas { background:#0d0d20; border-radius:4px; display:block; }
+  .st { display:flex; justify-content:space-between; font-size:11px; color:#889; margin-top:4px; }
+  .st b { color:#eee; }
+  .st .dead { color:#f66; } .st .alive { color:#6e6; }
+  .wrap { display:flex; gap:12px; padding:8px 12px; align-items:flex-start; }
+  table { border-collapse:collapse; font-size:12px; }
+  th,td { border:1px solid #22223e; padding:2px 8px; text-align:center; }
+  th { background:#12122a; color:#ccd; }
+  td.first { text-align:left; }
+  .ctl { font-size:12px; color:#889; display:flex; gap:8px; align-items:center; margin:2px 16px 6px; }
+  .ctl button { background:#1a1a30; color:#ccd; border:1px solid #334; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  #notes { font-size:11px; color:#778; width:300px; }
+  #notes b { color:#aab; }
+  /* 竖排排行榜：1/2/3 名有层次 */
+  .board { width:296px; }
+  .board h3 { margin:0 0 6px; font-size:13px; color:#dde; }
+  .rk { display:flex; align-items:center; gap:8px; background:#0b0b18; border:1px solid #1e1e38; border-radius:8px; margin-bottom:5px; padding:6px 8px; transition:all .25s; }
+  .rk .no { width:26px; height:26px; border-radius:50%; background:#1a1a30; color:#889; font-size:12px; display:flex; align-items:center; justify-content:center; flex:0 0 26px; }
+  .rk .who { flex:1; min-width:0; }
+  .rk .who div { font-size:12px; color:#dde; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rk .who small { font-size:10px; color:#667; }
+  .rk .sc { font-size:16px; color:#fff; font-weight:700; }
+  .rk .sc small { font-size:10px; color:#667; font-weight:400; display:block; text-align:right; }
+  .rk.g1 { background:linear-gradient(90deg,#3a2f10,#0b0b18 70%); border-color:#c9a227; padding:11px 10px; }
+  .rk.g1 .no { background:#c9a227; color:#1a1400; font-weight:700; } .rk.g1 .sc { color:#ffd35c; font-size:20px; }
+  .rk.g2 { background:linear-gradient(90deg,#25252c,#0b0b18 70%); border-color:#8f9099; padding:9px 9px; }
+  .rk.g2 .no { background:#8f9099; color:#111; font-weight:700; } .rk.g2 .sc { color:#dfe1e8; }
+  .rk.g3 { background:linear-gradient(90deg,#2a1d14,#0b0b18 70%); border-color:#a06a3a; }
+  .rk.g3 .no { background:#a06a3a; color:#1a0f06; font-weight:700; } .rk.g3 .sc { color:#e0a877; }
+  .rk.deadlane .who div { color:#8a7; }
+  .ms { display:flex; justify-content:space-between; font-size:11px; color:#778; border-bottom:1px dashed #1e1e38; padding:2px 4px; }
+  .lane .in { font-size:9.5px; color:#567; margin-top:3px; line-height:1.25; height:24px; overflow:hidden; }
+  .lane.died { border-color:#5a2130; }
+</style></head><body>
+<h1>同屏 PK · 6 种策略输入，跑同一条食物序列，直到死
+  <a href="laya-snake-intro.html" style="font-size:13px;font-weight:400;color:#60a5fa;margin-left:10px">方案介绍</a>
+  <a href="laya-snake-feature.html" style="font-size:13px;font-weight:400;color:#3ddc84;margin-left:10px">特征蛇小程序(无模型)</a></h1>
+<div class="sub">无步数封顶：撞墙 / 撞身 / 饿死 才算终局，榜上看<b>最终得分</b>。每局 6 条蛇起点相同、食物序列相同（种子随机预生成）。存活中的蛇显示在左边，已死的蛇自动挪到右边。</div>
+<div id="engine" class="bad">桥接检查中…</div>
+<div class="ctl">
+  <button id="btnRun" onclick="toggle()">暂停</button>
+  <button id="btnNext" onclick="nextMatch()" style="background:#22334f;border-color:#3d6fa8">开始下一局</button>
+  <button onclick="hardReset()">清零重开</button>
+  <label style="color:#889"><input type="checkbox" id="autoR" checked> 打完一局自动暂停</label>
+  <span>节奏：Web Worker 心跳 150ms/步（后台标签页也不掉速）</span>
+  <label style="color:#889">饿死容忍 <input type="range" id="starveR" min="60" max="800" step="20" value="300" style="width:110px"> <span id="starveV">300</span>步没吃到</label>
+</div>
+<div class="wrap">
+  <div>
+    <div class="lanes" id="lanes"></div>
+    <div id="matchLine" style="padding:6px 12px;font-size:11px;color:#78a"></div>
+  </div>
+  <div class="board">
+    <h3>排行榜 · 平均最终得分（活的蛇 = 当前局实时分）</h3>
+    <div id="rankCards"></div>
+  </div>
+  <div id="notes">
+    <b>排位规则</b>：存活中的蛇按<b>本局实时得分</b>插队显示（左/上），已死的蛇排右/下并按历史平均分。每局结束才计入平均分，避免单局波动。<br><br>
+    <b>三特征规则（纯特征）</b>只看 3 个输入特征：①落点性质(wall/body/vacating/free) ②距食物变近/变远/不变 ③洪水填充空间。纯 if 排序，无搜索、无权重、无学习。<br><br>
+    <b>BFS 老师（特征+算法）</b>＝训练标签的来源：全图最短路 + 洪水空间 + 死角重罚，代表"会自己算"的上界。<br><br>
+    <b>零样本·裸棋盘 / 零样本·契约（纯模型，未训练）</b>：原生 Laya 421M。裸棋盘=长规则+静态四选项；契约=短规则+每步坐标事实选项。<br><br>
+    <b>RLCD 训练版（特征+微调）</b>：与"契约"完全相同的输入，只是权重经过 RLCD 微调（26k 老师标签 / 4 轮）。<br><br>
+    <b>环契约·1小时（序号+微调）</b>：输入升级成 144 格闭合环——状态带环距离(loopAhead)，每个选项带自己的环步数(cyc)，规则文字说明"环安全"判据；权重用纯代码环老师的标签限时 CE 微调（800 步 / 3097 秒），uncapped 评测 44.2 食物/局（旧契约 RLCD 19.95，环老师上限 141）。<br><br>
+    <b>公平性</b>：每局 6 条蛇吃<b>同一条食物序列</b>（种子随机预生成），起点、长度、规则全同；不限步数，无步数封顶。唯一附加规则＝<b>饿死</b>：同一食物被别的蛇吃掉后，你在容忍步数（默认 300，上方滑杆可调）内没吃到就算死，防止绕圈永生。四方向全被堵死＝<b>困死</b>，同样是真实终局。
+  </div>
+</div>
+<script>
+const BRIDGE='http://127.0.0.1:8890', GW=12, GH=12, N=13, CAP=6000;
+const URLP=new URLSearchParams(location.search);
+let STARVE=+(URLP.get('starve')||300);   // 饿死容忍步数，可调（?starve=150 加速录屏）
+let autoPause=URLP.get('auto')!=='0';    // 打完一局自动暂停，方便逐局讲解
+const DIRS={UP:[0,-1],DOWN:[0,1],LEFT:[-1,0],RIGHT:[1,0]}, KN=['UP','DOWN','LEFT','RIGHT'];
+const RAW_RULES="You are driving a snake in a 12x12 grid game. The board is given as 12 rows of 12 characters: '0' empty cell, '1' snake body, '2' snake head, '3' food. Row 0 is the top wall, row 11 the bottom wall; column 0 the left wall, column 11 the right wall; rows are listed top to bottom. UP moves the head to row-1, DOWN to row+1, LEFT to col-1, RIGHT to col+1. Choose the direction that leads the head toward the food while staying alive: never step into a wall or into a '1' body cell.";
+const RAW_OPTS={UP:'move one cell up (row-1)',DOWN:'move one cell down (row+1)',LEFT:'move one cell left (col-1)',RIGHT:'move one cell right (col+1)'};
+const SHORT="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. Pick the direction that moves the head toward the food without dying.";
+
+// ── 环境（与 _rlcd_snake.py 逐一对齐）──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function stepSnake(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return[snake,true,false];
+  if(body.some(s=>s[0]===nx&&s[1]===ny))return[snake,true,false];
+  const ns=[[nx,ny],...snake];if(!eat)ns.pop();return[ns,false,eat];}
+function gridRows(snake,food){const g=Array.from({length:GH},()=>Array(GW).fill('0'));
+  snake.forEach((s,i)=>{g[s[1]][s[0]]=i===0?'2':'1';});g[food[1]][food[0]]='3';return g.map(r=>r.join(''));}
+function landOf(nx,ny,snake,food){
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return'wall';
+  const tail=snake[snake.length-1],head=snake[0];
+  const inBody=snake.slice(1,-1).some(s=>s[0]===nx&&s[1]===ny);
+  const isTail=snake.length>1&&nx===tail[0]&&ny===tail[1];
+  const eat=nx===food[0]&&ny===food[1];
+  if(inBody)return'body';
+  if(isTail)return eat?'body':'vacating';
+  return'free';}
+function optText(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+  const rel=dn<dc?'NEARER to food':(dn>dc?'FARTHER from food':'SAME distance');
+  return`(${nx},${ny}) ${landOf(nx,ny,snake,food)}, ${rel}`;}
+function floodSpace(head,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  const seen=new Set([head[0]+','+head[1]]);const st=[head];let n=0;
+  while(st.length){const[x,y]=st.pop();n++;
+    for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+      if(p[0]>=0&&p[0]<GW&&p[1]>=0&&p[1]<GH&&!b.has(key)&&!seen.has(key)){seen.add(key);st.push(p);}}}
+  return n;}
+function bfsDist(head,food,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  if(head[0]===food[0]&&head[1]===food[1])return 0;
+  let q=[[head,0]];const seen=new Set([head[0]+','+head[1]]);
+  while(q.length){const nq=[];for(const[[x,y],d]of q){for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];
+    const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+    if(p[0]<0||p[0]>=GW||p[1]<0||p[1]>=GH||b.has(key)||seen.has(key))continue;
+    if(p[0]===food[0]&&p[1]===food[1])return d+1;
+    seen.add(key);nq.push([p,d+1]);}}q=nq;}
+  return null;}
+
+// ── 选手 1：三特征纯规则（只有 落点性质 / 变近变远 / 洪水空间）──
+function rule3Pick(snake,food){
+  const cand=[];
+  for(const d of KN){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    if(land==='wall'||land==='body')continue;
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?0:(dn>dc?2:1);
+    const ns=[[nx,ny],...snake];if(!(nx===food[0]&&ny===food[1]))ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));
+    cand.push({d,rel,dn,sp,ok:sp>=ns.length*1.2});}
+  if(!cand.length)return null;
+  const pool=cand.filter(c=>c.ok).length?cand.filter(c=>c.ok):cand;
+  pool.sort((a,b)=>a.rel-b.rel||a.dn-b.dn||b.sp-a.sp);
+  return pool[0].d;}
+
+// ── 选手 2：BFS 老师（与 teacher_scores 同式）──
+function teacherScores(snake,food){const out=[];
+  for(const d of KN){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+    if(nx<0||nx>=GW||ny<0||ny>=GH||body.some(s=>s[0]===nx&&s[1]===ny)){out.push({d,s:-1000});continue;}
+    const ns=[[nx,ny],...snake];if(!eat)ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));const dist=bfsDist(ns[0],food,ns.slice(1));
+    let sc=dist===null?-25+sp*0.5:40-dist*2+sp*0.3;
+    if(sp<ns.length*1.3)sc-=(ns.length*1.3-sp)*4;
+    out.push({d,s:sc});}
+  return out;}
+function bfsPick(snake,food,rng){const sc=teacherScores(snake,food);
+  const alive=sc.filter(x=>x.s>-500);if(!alive.length)return null;
+  const top=Math.max(...sc.map(x=>x.s));
+  const best=sc.filter(x=>x.s>=top);const pool=best.length?best:alive;
+  return pool[Math.floor((rng?rng():Math.random())*pool.length)].d;}
+
+// ── 选手 3/4/5：桥接模型 ──
+async function bridgePick(model,state,criteria,instructions){
+  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),4000);
+  try{const j=await fetch(BRIDGE+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},signal:ac.signal,
+    body:JSON.stringify({model,state,instructions,criteria})}).then(r=>r.json());
+  return{dir:j.choice,ms:j.ms||0};}finally{clearTimeout(t);}}
+
+// ── 环契约（与 _rlcd_cycle.py 逐字对齐）：144 格闭合环 + loopAhead 状态事实 + cyc 选项事实 ──
+const CYCLE_RULES="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. The 144 cells also form one closed loop (loopAhead in the state gives loop distances from the head: bodyAhead = steps forward to the nearest body cell counting the tail, bodyGoAhead = same but excluding the tail cell (it vacates unless you eat this move), foodAhead = steps forward to the food). Each option lists its landing cell facts and cyc = its forward loop steps from the head. A move is loop-safe if it does not pass your body or the food on the loop: when the move does not eat, cyc <= bodyGoAhead-1 and cyc <= foodAhead; when the move eats the food, cyc <= bodyAhead-1. Never pick a wall or body landing. Among loop-safe moves prefer the one closest to the food.";
+function cidx(x,y){if(y===0)return x===0?0:133+(11-x);const s=1+11*x;return(x%2===0)?s+(y-1):s+(11-y);}
+function loopAhead(snake,food){const hi=cidx(snake[0][0],snake[0][1]);
+  const D=p=>((cidx(p[0],p[1])-hi)%144+144)%144;
+  let m1=144,m2=144;
+  for(let i=1;i<snake.length;i++){const dd=D(snake[i]);
+    if(i<snake.length-1&&dd<m2)m2=dd; if(dd<m1)m1=dd;}
+  return{foodAhead:D(food),bodyAhead:m1,bodyGoAhead:m2};}
+function cycleState(snake,food){return{game:'snake',board:'12x12',grid:gridRows(snake,food),loopAhead:loopAhead(snake,food)};}
+function cycleCrit(snake,food){const[hx,hy]=snake[0],hi=cidx(hx,hy),c={};
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?'NEARER to food':(dn>dc?'FARTHER from food':'SAME distance');
+    c[d]=land==='wall'?`(${nx},${ny}) wall, ${rel}`
+      :`(${nx},${ny}) ${land}, ${rel}, cyc=${((cidx(nx,ny)-hi)%144+144)%144}`;}
+  return c;}
+
+// ── 赛道 ──
+const SCHEMES=[
+ {key:'rule3',name:'三特征规则智能体',short:'三特征规则',type:'特征 · 纯代码',kind:'local',fn:rule3Pick,
+  in:'3 个特征：落点性质 / 距食物变近变远 / 洪水空间',learn:'无（手写 if 排序）'},
+ {key:'bfs',name:'BFS 老师（搜索算法）',short:'BFS 老师',type:'算法 · 纯代码',kind:'local',fn:bfsPick,
+  in:'整块棋盘（自己做全图最短路）',learn:'无（也是训练标签来源）'},
+ {key:'zs_raw',name:'零样本 · 裸棋盘',short:'零样本裸棋盘',type:'模型 · 未训练',kind:'model',model:'laya',mode:'raw',
+  in:'长规则 + 12×12 数字矩阵 + 静态四选项',learn:'无（原生权重）'},
+ {key:'zs_con',name:'零样本 · 契约选项',short:'零样本契约',type:'模型 · 未训练',kind:'model',model:'laya',mode:'contract',
+  in:'短规则 + 棋盘 + 每步坐标事实选项',learn:'无（原生权重）'},
+ {key:'rlcd',name:'RLCD 微调 · 契约选项',short:'RLCD 训练版',type:'模型 · 微调',kind:'model',model:'rlcd',mode:'contract',
+  in:'与"零样本契约"逐字相同',learn:'RLCD 微调：26k 标签 / 4 轮'},
+ {key:'cycle',name:'环契约微调 · 序号输入',short:'环契约·1小时',type:'模型 · 微调',kind:'model',model:'cycle',mode:'cycle',
+  in:'短规则 + 棋盘 + 环距离事实(loopAhead/cyc)',learn:'纯代码环老师标签 → 限时CE微调 800步'},
+];
+let lanes,matchNo,rngFood,perm,running=true,matchGen=0,tickAt=Date.now(),tickErr='',busy=false,bridgeMs=0,matchBreak=false,modelMs=0,modelN=0,deathSeq=0;
+const beatWorker=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(1),150);'],{type:'text/javascript'})));
+beatWorker.onmessage=()=>tick();
+
+function mkLane(s){const div=document.createElement('div');div.className='lane';
+  div.innerHTML=`<h2>${s.name}<small>${s.type} · ${s.learn}</small></h2><canvas width="${GW*N}" height="${GH*N}"></canvas><div class="st"><span>分 <b class="fd">0</b></span><span>长 <b class="ln">3</b></span><span>步 <b class="sp">0</b></span><span class="hs alive">存活</span></div><div class="in" title="${s.in}">输入：${s.in}</div>`;
+  return div;}
+function initLanes(){const el=document.getElementById('lanes');el.innerHTML='';
+  lanes=SCHEMES.map(s=>{const dom=mkLane(s);el.appendChild(dom);
+    return{s,el:dom,snake:null,food:null,score:0,steps:0,alive:true,cause:'—',starve:0,lenMax:3,
+      dom:{fd:dom.querySelector('.fd'),ln:dom.querySelector('.ln'),sp:dom.querySelector('.sp'),
+           hs:dom.querySelector('.hs'),cv:dom.querySelector('canvas')}};});}
+const stats={};SCHEMES.forEach(s=>stats[s.key]={games:0,foodSum:0,best:0,stepsSum:0,causes:{}});
+
+function newMatch(){matchGen++;matchNo++;rngFood=mulberry32((matchNo*9301+49297)%233280);
+  // 公共食物流 = 全部格子的一个固定乱序表（本局所有蛇共用同一张表）。
+  // 每条蛇有自己的指针：轮到它的格子若被自己身子占住，就跳过那一格（永久跳过），绝不把食物画在身上。
+  perm=[];for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)perm.push([x,y]);
+  for(let i=perm.length-1;i>0;i--){const j=Math.floor(rngFood()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]];}
+  lanes.forEach(L=>{L.snake=[[6,6],[5,6],[4,6]];L.score=0;L.steps=0;L.alive=true;L.cause='—';L.starve=0;L.lenMax=3;
+    L.ptr=0;L.diedSeq=0;L.el.classList.remove('died');assignFood(L);});
+  deathSeq=0;
+  drawAll();renderBoard();}
+function assignFood(L){const occ=new Set(L.snake.map(s=>s[0]+','+s[1]));
+  while(L.ptr<perm.length&&occ.has(perm[L.ptr][0]+','+perm[L.ptr][1]))L.ptr++;   // 跳过被自己身子占住的格
+  L.food=L.ptr<perm.length?perm[L.ptr]:null;}
+function nextFood(L){L.ptr++;assignFood(L);}
+
+function drawLane(L){const g=L.dom.cv.getContext('2d');
+  g.fillStyle='#0d0d20';g.fillRect(0,0,GW*N,GH*N);
+  g.strokeStyle='#1a1a30';for(let i=0;i<=GW;i++){g.beginPath();g.moveTo(i*N+.5,0);g.lineTo(i*N+.5,GH*N);g.stroke();g.beginPath();g.moveTo(0,i*N+.5);g.lineTo(GW*N,i*N+.5);g.stroke();}
+  g.fillStyle='#e33';if(L.food)g.fillRect(L.food[0]*N+4,L.food[1]*N+4,N-8,N-8);
+  L.snake.forEach((s,i)=>{g.fillStyle=i===0?(L.alive?'#4dd2ff':'#888'):(L.alive?'#1f8fb8':'#556');g.fillRect(s[0]*N+1,s[1]*N+1,N-2,N-2);});
+  if(!L.alive){g.fillStyle='rgba(255,60,60,.9)';g.font='bold 13px Consolas';g.fillText('☠'+L.cause+' '+L.score+'分',4,GH*N-5);}
+  else{g.fillStyle='rgba(255,255,255,.75)';g.font='bold 13px Consolas';g.fillText(L.score+'分',4,14);}}
+function drawAll(){lanes.forEach(drawLane);}
+function uiLane(L){L.dom.fd.textContent=L.score;L.dom.ln.textContent=L.snake.length;L.dom.sp.textContent=L.steps;
+  L.dom.hs.className='hs '+(L.alive?'alive':'dead');
+  L.dom.hs.textContent=L.alive?('饿 '+L.starve+'/'+STARVE):'☠ '+L.cause;
+  L.el.classList.toggle('died',!L.alive);L.el.style.opacity=L.alive?1:.72;}
+function rankList(){
+  return SCHEMES.map((s,i)=>{const L=lanes[i],t=stats[s.key];
+    return{s,L,t,avg:avg1(t),key:L.alive?L.score:avg1(t)};})
+    .sort((a,b)=>(b.L.alive-a.L.alive)||b.key-a.key||b.avg-a.avg);}
+function avg1(t){return t.games?t.foodSum/t.games:0;}
+function renderBoard(){
+  const R=rankList(),open=lanes.some(L=>L.alive);
+  R.forEach((r,i)=>{if(!r.L.alive&&!open)r.L.pos=i+1;});   // 本局终名次：定格到最后一帧
+  const medals=['🥇','🥈','🥉','4','5','6'];
+  const cards=R.map((r,i)=>`<div class="rk ${open&&i===0?'g1':''}" title="输入：${r.s.in}\n训练：${r.s.learn}">
+      <div class="no">${open?(r.L.alive?'▶':'✕'):medals[i]}</div>
+      <div class="who"><div>${r.s.short}</div><small>${r.s.type} · ${r.L.alive?'运行中，实时分不计平均分':('第'+(r.L.pos||i+1)+'名出局·'+r.L.cause)}</small></div>
+      <div class="sc">${r.L.alive?r.L.score:avg1(r.t).toFixed(1)}<small>${r.L.alive?('步'+r.L.steps+' 饿'+r.L.starve):('历史平均 · 局'+r.t.games+' 高'+r.t.best)}</small></div>
+    </div>`).join('');
+  document.getElementById('rankCards').innerHTML=cards;
+  document.getElementById('matchLine').innerHTML=
+    '<b style="color:#dde">第 '+matchNo+' 局</b> · 存活 '+lanes.filter(L=>L.alive).length+'/6 · 步 '+Math.max(...lanes.map(L=>L.steps))+
+    ' · 本局得分 '+R.map(r=>r.s.short+' '+r.L.score+(r.L.alive?'':'('+r.L.cause+')')).join('　')+
+    '　<small style="color:#667">平均分只在本局全部结束后更新；实时分先入榜不加分。</small>';}
+
+async function tick(){
+  if(!running||busy||matchBreak)return;
+  busy=true;tickAt=Date.now();
+  try{ await tickInner(); }
+  catch(e){ tickErr=''+e; }
+  busy=false;
+  setEng(tickErr?'bad':'ok', '桥接在线 ✓ · 第 '+matchNo+' 局 步'+Math.max(...lanes.map(L=>L.steps))+
+    ' · 模型推理 '+(modelN?(modelMs/modelN).toFixed(0):'—')+'ms/步 · 存活 '+lanes.filter(L=>L.alive).length+'/6 · 无步数上限'+(tickErr?' · 异常:'+tickErr:''));
+}
+async function tickInner(){
+  const myGen=matchGen;
+  const pend=lanes.map(async L=>{
+    if(!L.alive)return{L,dir:null};
+    if(!L.food){L.alive=false;L.cause='棋盘装满';finishNoMove(L);return{L,dir:null};}
+    if(L.steps>=CAP||L.starve>=STARVE){const why=L.steps>=CAP?'超时':'饿死';L.alive=false;L.cause=why;
+      finishNoMove(L);return{L,dir:null};}
+    if(L.s.kind==='local')return{L,dir:L.s.fn(L.snake,L.food)};
+    const state=L.s.mode==='cycle'?cycleState(L.snake,L.food):{game:'snake',board:'12x12',grid:gridRows(L.snake,L.food)};
+    let instr,crit;
+    if(L.s.mode==='raw'){instr=RAW_RULES;crit=RAW_OPTS;}
+    else if(L.s.mode==='cycle'){instr=CYCLE_RULES;crit=cycleCrit(L.snake,L.food);}
+    else{instr=SHORT;const c={};for(const d of KN)c[d]=optText(L.snake,L.food,d);crit=c;}
+    try{const r=await bridgePick(L.s.model,state,crit,instr);modelMs+=r.ms;modelN++;return{L,dir:r.dir};}
+    catch(e){return{L,dir:null,err:''+e};}
+  });
+  const t0=performance.now();
+  const res=await Promise.all(pend);
+  bridgeMs=performance.now()-t0;
+  if(myGen!==matchGen)return;                    // 期间被清零/重开
+  let anyAlive=false;
+  for(const{L,dir,err}of res){
+    if(err){L.alive=false;L.cause='桥接离线';finishNoMove(L);continue;}
+    if(!L.alive)continue;
+    if(!dir){L.alive=false;L.cause='困死';finishNoMove(L);continue;}   // 四方向全堵＝无路可走
+    const[hx,hy]=L.snake[0],[dx,dy]=DIRS[dir];const nx=hx+dx,ny=hy+dy;
+    const[ns,died,ate]=stepSnake(L.snake,L.food,dir);
+    L.snake=ns;L.steps++;
+    if(died){L.alive=false;L.cause=(nx<0||nx>=GW||ny<0||ny>=GH)?'撞墙':'撞身';
+      stats[L.s.key].causes[L.cause]=(stats[L.s.key].causes[L.cause]||0)+1;
+      finishMatch(L);}
+    else{anyAlive=true;
+      if(ate){L.score++;L.starve=0;L.lenMax=Math.max(L.lenMax,L.snake.length);nextFood(L);}
+      else L.starve++;
+      drawLane(L);}
+    uiLane(L);}
+  orderLanes();renderBoard();
+  if(lanes.every(L=>!L.alive)&&myGen===matchGen){           // 本局结束：定格名次
+    matchBreak=true;renderBoard();
+    if(autoPause){running=false;setRunBtn();
+      setEng('ok','第 '+matchNo+' 局结束 · 已自动暂停（名次已定格）· 点「开始下一局」继续');return;}
+    setTimeout(()=>{matchBreak=false;if(running){newMatch();tick();}},1800);}
+}
+function nextMatch(){matchBreak=false;newMatch();running=true;setRunBtn();tick();}
+function setRunBtn(){document.getElementById('btnRun').textContent=running?'暂停':'继续';}
+function orderLanes(){const el=document.getElementById('lanes');
+  // 存活蛇固定站位（不按分数换位，方便盯同一块棋盘）；死透的蛇挪到右边，按出局先后排
+  const live=lanes.filter(L=>L.alive), dead=lanes.filter(L=>!L.alive).sort((a,b)=>(a.diedSeq||9e9)-(b.diedSeq||9e9));
+  [...live,...dead].forEach(L=>el.appendChild(L.el));}
+function finishNoMove(L){stats[L.s.key].causes[L.cause]=(stats[L.s.key].causes[L.cause]||0)+1;finishMatch(L);drawLane(L);renderBoard();}
+function finishMatch(L){const t=stats[L.s.key];t.games++;t.foodSum+=L.score;t.stepsSum+=L.steps;
+  t.best=Math.max(t.best,L.score);L.diedSeq=++deathSeq;uiLane(L);drawLane(L);}
+function toggle(){
+  if(!running&&lanes.every(L=>!L.alive)){nextMatch();return;}   // 打完一局后再点「继续」＝开下一局
+  running=!running;setRunBtn();if(running)tick();}
+function hardReset(){initLanes();Object.keys(stats).forEach(k=>stats[k]={games:0,foodSum:0,best:0,stepsSum:0,causes:{}});
+  matchNo=0;matchBreak=false;newMatch();running=true;setRunBtn();tick();}
+document.getElementById('autoR').onchange=e=>autoPause=e.target.checked;
+document.getElementById('autoR').checked=autoPause;
+
+(async()=>{try{const h=await fetch(BRIDGE+'/health').then(r=>r.json());
+    if(!h.ok||!h.models.laya||!h.models.rlcd||!h.models.cycle)throw 0;
+    setEng('ok','桥接在线 ✓ laya(原生) + rlcd(RLCD微调) + cycle(环契约微调) · 同屏开战');}
+  catch(e){setEng('bad','桥接离线：先运行 python laya_bridge.py --model laya=convaiinnovations/laya --model rlcd=_rlcd/run1/final --model cycle=_rlcd/run3/final');}
+  initLanes();matchNo=0;newMatch();running=true;tick();})();
+function setEng(c,t){const el=document.getElementById('engine');el.className=c;el.textContent=t;}
+const sR=document.getElementById('starveR'),sV=document.getElementById('starveV');
+sR.value=STARVE;sV.textContent=STARVE;
+sR.oninput=e=>{STARVE=+e.target.value;sV.textContent=STARVE;};
+</script></body></html>

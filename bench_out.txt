@@ -1,0 +1,41 @@
+loading ft agent...
+C:\Users\IYI\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\torch\nn\modules\module.py:1370: UserWarning: expandable_segments not supported on this platform (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\c10/cuda/CUDAAllocatorConfig.h:39.)
+  return t.to(
+seq len = 230 tokens
+
+== GPU forward latency ==
+  A fp32 + bf16 autocast (current)             p50=  33.8ms p90=  41.4ms min= 27.9
+  B bf16 weights, act_head fp32, no autocast   p50=  28.9ms p90=  34.4ms min= 26.2
+  C fp32 + fp16 autocast                       p50=  34.8ms p90=  44.8ms min= 27.9
+W0925 18:48:07.447000 35400 site-packages\torch\utils\flop_counter.py:29] triton not found; flop counting will not work for triton kernels
+  compiling (this can take a couple of minutes)...
+C:\Users\IYI\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\torch\_inductor\compile_fx.py:322: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+W0925 18:48:42.799000 35400 site-packages\torch\_inductor\utils.py:1731] [0/0] Not enough SMs to use max_autotune_gemm mode
+C:\Users\IYI\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\torch\_inductor\lowering.py:7836: UserWarning: 
+Online softmax is disabled on the fly since Inductor decides to
+split the reduction. Cut an issue to PyTorch if this is an
+important use case and you want to speed it up with online
+softmax.
+
+  warnings.warn(
+  D torch.compile FAILED: TritonMissing: Cannot find a working triton installation. Either the package is not installed or it is too old. More informat
+
+== token budget effect (bf16 autocast) ==
+  short-instruction seq len = 130
+  E short template + bf16 autocast             p50=  34.5ms p90=  44.3ms min= 27.9
+  F full template control                      p50=  38.3ms p90=  45.6ms min= 28.2
+
+== misc ==
+C:\Users\IYI\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\torch\_inductor\lowering.py:7836: UserWarning: 
+Online softmax is disabled on the fly since Inductor decides to
+split the reduction. Cut an issue to PyTorch if this is an
+important use case and you want to speed it up with online
+softmax.
+
+  warnings.warn(
+  G compile + bf16 autocast (rerun post-warm)  FAILED: TritonMissing: Cannot find a working triton installation. Either the package is not installed or it is too old. More informat
+
+== HTTP latency (needs bridge on :8890) ==
+  H HTTP no-keepalive  p50=30.7ms max=312.6
+  I HTTP keep-alive    p50=34.7ms max=46.2

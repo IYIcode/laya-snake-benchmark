@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Laya 决策模型演示 - 贪吃蛇 AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+    overflow: hidden;
+    width: 100vw; height: 100vh;
+  }
+  canvas { display: block; }
+  .controls {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 12px; z-index: 100;
+    background: rgba(10,10,26,0.9); padding: 8px 18px; border-radius: 30px;
+    border: 1px solid #222;
+  }
+  .controls button {
+    background: none; border: 1px solid #444; color: #ccc;
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;
+  }
+  .controls button:hover { border-color: #00e676; color: #00e676; }
+  .controls button.active { background: #00e67622; border-color: #00e676; color: #00e676; }
+  .progress { position: fixed; bottom: 58px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 100; }
+  .progress .dot { width: 7px; height: 7px; border-radius: 50%; background: #333; transition: all 0.3s; cursor: pointer; }
+  .progress .dot.active { background: #00e676; transform: scale(1.4); }
+  .progress .dot.done { background: #00e67666; }
+  .scene-label { position: fixed; top: 12px; right: 16px; font-size: 11px; color: #555; z-index: 100; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="progress" id="progress"></div>
+<div class="controls">
+  <button onclick="prevScene()">◀ 上一步</button>
+  <button id="btnPlay" class="active" onclick="togglePlay()">⏸ 暂停</button>
+  <button onclick="nextScene()">下一步 ▶</button>
+</div>
+<div class="scene-label" id="sceneLabel"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+
+const C = {
+  bg:'#0a0a1a', green:'#00e676', blue:'#00b0ff', red:'#ff5252',
+  orange:'#ffab40', yellow:'#ffd740', purple:'#b388ff', white:'#e0e0e0',
+  gray:'#666', darkGray:'#333',
+};
+
+const scenes = [
+  { name:'开场', dur:5 },
+  { name:'① Laya 的输入', dur:9 },
+  { name:'② 三个选择', dur:8 },
+  { name:'③ 评估每个选择', dur:14 },
+  { name:'④ 打分与 Laya 的输出', dur:12 },
+  { name:'⑤ 执行移动', dur:6 },
+  { name:'⑥ 连续决策靠近食物', dur:9 },
+  { name:'⑦ 吃到食物', dur:6 },
+  { name:'⑧ 实际速度', dur:12 },
+  { name:'⑨ Laya 怎么配置', dur:16 },
+  { name:'总结', dur:7 },
+];
+
+let cur = 0, sTime = 0, playing = true, lastT = performance.now();
+
+const progEl = document.getElementById('progress');
+scenes.forEach((s,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot'; d.title = s.name; d.onclick = () => goTo(i);
+  progEl.appendChild(d);
+});
+
+function updProg() {
+  progEl.querySelectorAll('.dot').forEach((d,i) => {
+    d.className = 'dot';
+    if (i < cur) d.classList.add('done');
+    if (i === cur) d.classList.add('active');
+  });
+  document.getElementById('sceneLabel').textContent = `${cur+1}/${scenes.length} — ${scenes[cur].name}`;
+}
+function goTo(i) {
+  cur = Math.max(0,Math.min(scenes.length-1,i)); sTime=0;
+  if (cur===6) resetStep2();
+  if (cur===8) { resetMontage(); mMsSum=0; mMsMax=0; mPend=false; bridgeOK=null; }
+  updProg();
+}
+function nextScene() { goTo(cur+1); }
+function prevScene() { goTo(cur-1); }
+function togglePlay() {
+  playing = !playing;
+  const b = document.getElementById('btnPlay');
+  b.textContent = playing ? '⏸ 暂停' : '▶ 播放';
+  b.classList.toggle('active', playing);
+  lastT = performance.now();
+}
+
+// ── Easing ──
+function easeOut(t) { return 1-Math.pow(1-t,3); }
+function fi(t,s,d) { return Math.max(0,Math.min(1,(t-s)/d)); }
+
+// ── Font scale: 小字号保底 + 按视口高度放大（1440p 下约 ×1.45） ──
+function fs(n){
+  const vs = Math.max(1, Math.min(1.45, H/800));
+  const base = n < 11 ? n + 2 : n;
+  return Math.round(base * vs * 10) / 10;
+}
+
+// ── Draw helpers ──
+function txt(text,x,y,{size=16,color=C.white,align='left',bold=false,font=''}={}) {
+  ctx.fillStyle=color;
+  ctx.font=`${bold?'bold ':''} ${fs(size)}px ${font||"'Microsoft YaHei','Segoe UI',sans-serif"}`;
+  ctx.textAlign=align; ctx.textBaseline='middle'; ctx.fillText(text,x,y);
+}
+function box(x,y,w,h,{bg='#111',border=C.darkGray,r=8}={}) {
+  ctx.fillStyle=bg; ctx.strokeStyle=border; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill(); ctx.stroke();
+}
+function arrow(x1,y1,x2,y2,color=C.green,w=2) {
+  ctx.strokeStyle=color; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const a=Math.atan2(y2-y1,x2-x1),h=9;
+  ctx.fillStyle=color; ctx.beginPath(); ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-h*Math.cos(a-.4),y2-h*Math.sin(a-.4));
+  ctx.lineTo(x2-h*Math.cos(a+.4),y2-h*Math.sin(a+.4)); ctx.fill();
+}
+
+// ── Game logic ──
+function isSafe(x,y,snake,gw,gh){
+  if(x<0||x>=gw||y<0||y>=gh) return false;
+  return !snake.some(s=>s.x===x&&s.y===y);
+}
+function flood(sx,sy,snake,gw,gh){
+  const vis=new Set(), q=[{x:sx,y:sy}]; vis.add(`${sx},${sy}`);
+  const ss=new Set(snake.map(s=>`${s.x},${s.y}`)); let c=0;
+  while(q.length>0){
+    const{x,y}=q.shift(); c++;
+    for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){
+      const nx=x+dx,ny=y+dy,k=`${nx},${ny}`;
+      if(nx>=0&&nx<gw&&ny>=0&&ny<gh&&!vis.has(k)&&!ss.has(k)){vis.add(k);q.push({x:nx,y:ny});}
+    }
+    if(c>gw*gh) break;
+  }
+  return c;
+}
+function getFloodCells(sx,sy,snake,gw,gh){
+  const vis=[], vq=[{x:sx,y:sy}]; const vs=new Set([`${sx},${sy}`]);
+  const ss=new Set(snake.map(s=>`${s.x},${s.y}`));
+  while(vq.length>0){const c=vq.shift();vis.push(c);for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){const nx=c.x+dx,ny=c.y+dy,k=`${nx},${ny}`;if(nx>=0&&nx<gw&&ny>=0&&ny<gh&&!vs.has(k)&&!ss.has(k)){vs.add(k);vq.push({x:nx,y:ny});}}}
+  return vis;
+}
+function decide(head,food,snake,dir,gw,gh){
+  const dirs=[{x:0,y:-1,n:'UP'},{x:0,y:1,n:'DOWN'},{x:-1,y:0,n:'LEFT'},{x:1,y:0,n:'RIGHT'}];
+  return dirs.filter(d=>!(d.x===-dir.x&&d.y===-dir.y)).map(d=>{
+    const nx=head.x+d.x,ny=head.y+d.y;
+    if(!isSafe(nx,ny,snake,gw,gh)) return {...d,fd:0,sp:0,dc:4,s:-999,safe:false};
+    const fd=Math.abs(nx-food.x)+Math.abs(ny-food.y);
+    const sp=flood(nx,ny,snake,gw,gh);
+    let dc=0;
+    for(const[dx2,dy2]of[[0,1],[0,-1],[1,0],[-1,0]]) if(!isSafe(nx+dx2,ny+dy2,snake,gw,gh)) dc++;
+    let s=-fd*2+sp*.5-dc*3;
+    if(sp<snake.length) s-=50;
+    return {...d,fd,sp,dc,s,safe:true};
+  });
+}
+
+// ── 棋盘 ──
+const GW=12, GH=12;
+function drawGrid(ox,oy,cs,gw,gh,sn,fd,highlights=[]) {
+  ctx.fillStyle='#0d0d20'; ctx.fillRect(ox-1,oy-1,gw*cs+2,gh*cs+2);
+  ctx.strokeStyle='#1a1a30'; ctx.lineWidth=.5;
+  for(let i=0;i<=gw;i++){ctx.beginPath();ctx.moveTo(ox+i*cs,oy);ctx.lineTo(ox+i*cs,oy+gh*cs);ctx.stroke();}
+  for(let i=0;i<=gh;i++){ctx.beginPath();ctx.moveTo(ox,oy+i*cs);ctx.lineTo(ox+gw*cs,oy+i*cs);ctx.stroke();}
+  highlights.forEach(h=>{
+    ctx.fillStyle=h.color||'#00e67622';
+    ctx.fillRect(ox+h.x*cs,oy+h.y*cs,cs,cs);
+  });
+  if(fd){
+    ctx.fillStyle=C.red; ctx.shadowColor=C.red; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(ox+fd.x*cs+cs/2,oy+fd.y*cs+cs/2,Math.max(2,cs/2.5),0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  }
+  sn.forEach((s,i)=>{
+    const t=i/sn.length;
+    ctx.fillStyle=i===0?C.green:`rgb(${Math.round(t*10)},${Math.round(230-t*130)},${Math.round(118-t*60)})`;
+    ctx.fillRect(ox+s.x*cs+1,oy+s.y*cs+1,cs-2,cs-2);
+    if(i===0 && cs>=18){
+      ctx.fillStyle='#063';
+      ctx.beginPath();
+      ctx.arc(ox+s.x*cs+cs/2-3,oy+s.y*cs+cs/2-3,2,0,Math.PI*2);
+      ctx.arc(ox+s.x*cs+cs/2+3,oy+s.y*cs+cs/2-3,2,0,Math.PI*2);
+      ctx.fill();
+    }
+  });
+}
+
+// ── 布局：整页居中自适应（棋盘+右侧面板一起水平居中，格子随窗口缩放） ──
+function layout(panelW, belowReserve) {
+  if (panelW === undefined) panelW = Math.min(370, Math.max(270, W*0.25));
+  belowReserve = belowReserve || 0;
+  const topY = 100, bottomY = H - 128 - belowReserve;    // 主内容可用区
+  const availH = Math.max(GH*12, bottomY - topY);
+  const availW = W - panelW - 60;                // 两侧留白
+  const cs = Math.max(10, Math.min(Math.floor(availH/GH), Math.floor(availW/GW), 52));
+  const gwPx = GW*cs;
+  const totalW = gwPx + 30 + panelW;
+  const ox = Math.max(30, Math.floor((W - totalW)/2));
+  const oy = Math.floor(topY + (availH - GH*cs)/2);
+  return { ox, oy, cs, panelX: ox+gwPx+30, panelW };
+}
+
+// 底部说明条（水平居中）
+function bottomBar(lines, alpha){
+  const a = Math.max(0,Math.min(1,alpha));
+  if(a<=0) return;
+  const bw = Math.min(1100, W*0.88);
+  const lh = Math.max(24, fs(14)+10);
+  const bh = 20 + lines.length*lh;
+  const bx = (W-bw)/2, by = H-bh-56;
+  ctx.globalAlpha = a;
+  box(bx,by,bw,bh,{bg:'#111',border:C.darkGray});
+  lines.forEach((l,i)=>{
+    txt(l.t, W/2, by+18+i*lh, {size:l.s||13, color:l.c||C.white, align:'center', bold:l.b});
+  });
+  ctx.globalAlpha = 1;
+}
+
+// 顶部管线示意：游戏状态 → Laya → 输出动作 → 执行
+function pipeBar(activeStage, y){
+  const stages=[
+    {l:'游戏状态',s:'输入给 Laya',c:C.orange},
+    {l:'Laya 模型',s:'评估 + 打分',c:C.green},
+    {l:'动作指令',s:'Laya 的输出',c:C.blue},
+    {l:'游戏执行',s:'蛇移动一格',c:C.yellow},
+  ];
+  const bw=Math.min(780,W*0.74), x0=(W-bw)/2;
+  const seg=bw/4;
+  stages.forEach((st,i)=>{
+    const x=x0+i*seg;
+    const active = i===activeStage;
+    ctx.globalAlpha = active?1:0.35;
+    box(x+6,y,seg-12,42,{bg:st.c+(active?'22':'08'),border:st.c+(active?'aa':'33'),r:6});
+    txt(st.l,x+seg/2,y+14,{size:12,bold:active,color:st.c,align:'center'});
+    txt(st.s,x+seg/2,y+30,{size:9,color:C.gray,align:'center'});
+    if(i<3) arrow(x+seg-4,y+21,x+seg+4,y+21,C.gray,1);
+  });
+  ctx.globalAlpha=1;
+}
+
+// ── 演示局面 ──
+let snake=[{x:6,y:6},{x:5,y:6},{x:4,y:6}];
+let food={x:9,y:3};
+let dir={x:1,y:0};
+
+const DIR_CN={UP:'↑ 上',DOWN:'↓ 下',LEFT:'← 左',RIGHT:'→ 右'};
+const DIR_COLOR={UP:C.blue,DOWN:C.orange,RIGHT:C.purple,LEFT:C.red};
+
+// ═══════════════════ SCENE 0: 开场 ═══════════════════
+function r0(t){
+  const p=easeOut(Math.min(1,t/1.2));
+  ctx.globalAlpha=p;
+  txt('Laya 决策模型',W/2,H/2-110,{size:Math.min(52,W/16),bold:true,color:C.green,align:'center'});
+  txt('贪吃蛇 AI 是如何思考的？',W/2,H/2-50,{size:Math.min(24,W/34),color:C.white,align:'center'});
+  ctx.globalAlpha=1;
+  const p2=fi(t,1,0.8);
+  if(p2>0){
+    ctx.globalAlpha=p2;
+    txt('给它几组坐标，它决定蛇每一步往哪走 —— 全程中文拆解',W/2,H/2,{size:15,color:C.gray,align:'center'});
+    ctx.globalAlpha=1;
+  }
+  const p3=fi(t,1.8,0.8);
+  if(p3>0){
+    ctx.globalAlpha=p3;
+    pipeBar(-1, H/2+40);
+    txt('输入 → Laya 评估打分 → 输出动作 → 游戏执行，四步一循环',W/2,H/2+104,{size:13,color:C.orange,align:'center'});
+    ctx.globalAlpha=1;
+  }
+}
+
+// ═══════════════════ SCENE 1: Laya 的输入 ═══════════════════
+function r1(t){
+  txt('① 喂给 Laya 的输入：游戏状态',W/2,34,{size:26,bold:true,color:C.green,align:'center'});
+  pipeBar(0, 56);
+
+  const L=layout();
+  const {ox,oy,cs,panelX,panelW}=L;
+  const p1=fi(t,.5,.6);
+  ctx.globalAlpha=p1;
+  drawGrid(ox,oy,cs,GW,GH,snake,food);
+  ctx.globalAlpha=1;
+
+  // 标注蛇头/食物
+  const p2=fi(t,1.5,.8);
+  if(p2>0){
+    ctx.globalAlpha=p2;
+    const head=snake[0];
+    ctx.strokeStyle=C.green;
+    ctx.lineWidth=2+Math.sin(t*4);
+    ctx.strokeRect(ox+head.x*cs-1,oy+head.y*cs-1,cs+2,cs+2);
+    ctx.lineWidth=1;
+    txt('蛇头',ox+head.x*cs+cs/2,oy+head.y*cs-12,{size:12,color:C.green,align:'center',bold:true});
+    txt('食物',ox+food.x*cs+cs/2,oy+food.y*cs-12,{size:12,color:C.red,align:'center',bold:true});
+    ctx.globalAlpha=1;
+  }
+
+  // 右侧：输入数据面板（JSON 风格，中文键名）
+  const p3=fi(t,2.5,1);
+  if(p3>0){
+    ctx.globalAlpha=p3;
+    const head=snake[0];
+    const ph=GH*cs;
+    box(panelX,oy,panelW,ph,{bg:'#0d0d20',border:C.orange+'55'});
+    txt('传给模型的原始数据',panelX+panelW/2,oy+22,{size:14,bold:true,color:C.orange,align:'center'});
+    const rows=[
+      {k:'"蛇头坐标"', v:`[${head.x}, ${head.y}]`, c:C.green, d:'棋盘上的位置'},
+      {k:'"食物坐标"', v:`[${food.x}, ${food.y}]`, c:C.red, d:'目标位置'},
+      {k:'"蛇身坐标"', v:`${snake.slice(1).map(s=>`[${s.x},${s.y}]`).join(' ')}`, c:C.purple, d:'障碍物 = 它自己'},
+      {k:'"当前方向"', v:`"RIGHT" 向右`, c:C.blue, d:'不能瞬间掉头'},
+      {k:'"棋盘大小"', v:`${GW} × ${GH}`, c:C.orange, d:'四周都是墙'},
+    ];
+    const rowH=Math.min(62,(ph-64)/rows.length);
+    rows.forEach((r,i)=>{
+      const ry=oy+40+i*rowH;
+      box(panelX+14,ry,panelW-28,rowH-8,{bg:r.c+'0a',border:r.c+'33',r:6});
+      txt(r.k+':',panelX+24,ry+(rowH-8)/2-9,{size:13,bold:true,color:r.c,font:"'Consolas',monospace"});
+      txt(r.v,panelX+24,ry+(rowH-8)/2+11,{size:13,color:C.white,font:"'Consolas',monospace"});
+      txt(r.d,panelX+panelW-24,ry+(rowH-8)/2-9,{size:11,color:C.gray,align:'right'});
+    });
+    ctx.globalAlpha=1;
+  }
+
+  bottomBar([
+    {t:'模型看不到"画面"，只收到这组数字', c:C.white},
+    {t:'Laya 处理文本也是同理：先把内容编码成数字，再做判断', c:C.gray, s:12},
+  ], fi(t,6,1));
+}
+
+// ═══════════════════ SCENE 2: 三个选择 ═══════════════════
+function r2(t){
+  txt('② 三个选择：先排除"掉头"',W/2,34,{size:26,bold:true,color:C.green,align:'center'});
+  pipeBar(1, 56);
+
+  const L=layout(0);
+  const {ox,oy,cs}=L;
+  drawGrid(ox,oy,cs,GW,GH,snake,food);
+
+  const head=snake[0];
+
+  // 反方向 LEFT 划叉
+  const p0=fi(t,.6,.7);
+  if(p0>0){
+    const lx=head.x-1, ly=head.y;
+    ctx.globalAlpha=p0*0.5;
+    ctx.fillStyle=C.red+'44';
+    ctx.fillRect(ox+lx*cs,oy+ly*cs,cs,cs);
+    ctx.strokeStyle=C.red; ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(ox+lx*cs+4,oy+ly*cs+4); ctx.lineTo(ox+lx*cs+cs-4,oy+ly*cs+cs-4);
+    ctx.moveTo(ox+lx*cs+cs-4,oy+ly*cs+4); ctx.lineTo(ox+lx*cs+4,oy+ly*cs+cs-4);
+    ctx.stroke(); ctx.lineWidth=1;
+    ctx.globalAlpha=p0;
+    txt('× 不能掉头',ox+lx*cs+cs/2,oy+ly*cs+cs+14,{size:12,color:C.red,align:'center',bold:true});
+    ctx.globalAlpha=1;
+  }
+
+  // 3 个候选：文字画在格子正中（绝不重叠）
+  const cands=[
+    {dx:0,dy:-1,n:'UP',delay:1.8},
+    {dx:0,dy:1,n:'DOWN',delay:3.0},
+    {dx:1,dy:0,n:'RIGHT',delay:4.2},
+  ];
+  cands.forEach(c=>{
+    const p=fi(t,c.delay,.6);
+    if(p<=0) return;
+    const nx=head.x+c.dx, ny=head.y+c.dy;
+    const col=DIR_COLOR[c.n];
+    ctx.globalAlpha=p;
+    ctx.fillStyle=col+'44';
+    ctx.fillRect(ox+nx*cs,oy+ny*cs,cs,cs);
+    ctx.strokeStyle=col; ctx.lineWidth=2;
+    ctx.strokeRect(ox+nx*cs+1,oy+ny*cs+1,cs-2,cs-2);
+    ctx.lineWidth=1;
+    if(cs>=44){
+      const off=fs(12)*0.65;
+      txt(c.n,ox+nx*cs+cs/2,oy+ny*cs+cs/2-off,{size:12,color:col,align:'center',bold:true});
+      txt(DIR_CN[c.n],ox+nx*cs+cs/2,oy+ny*cs+cs/2+off,{size:12,color:col,align:'center',bold:true});
+    } else {
+      txt(DIR_CN[c.n],ox+nx*cs+cs/2,oy+ny*cs+cs/2,{size:12,color:col,align:'center',bold:true});
+    }
+    ctx.globalAlpha=1;
+  });
+
+  bottomBar([
+    {t:'贪吃蛇不能瞬间向后转 → 4 个方向先去掉 1 个，只剩 3 个候选', c:C.white},
+    {t:'接下来：Laya 给这 3 个候选各打一个分数', c:C.orange, s:12},
+  ], fi(t,5.2,1));
+}
+
+// ═══════════════════ SCENE 3: 评估每个选择 ═══════════════════
+function r3(t){
+  txt('③ 评估：每个方向算 3 个指标（中文解释）',W/2,34,{size:24,bold:true,color:C.green,align:'center'});
+  pipeBar(1, 56);
+
+  const L=layout(Math.min(430, Math.max(320, W*0.30)), 90);
+  const {ox,oy,cs,panelX,panelW}=L;
+  const head=snake[0];
+  const cands=decide(head,food,snake,dir,GW,GH);
+
+  drawGrid(ox,oy,cs,GW,GH,snake,food);
+
+  // 指标图例：棋盘下方
+  const legY=oy+GH*cs+10;
+  ctx.globalAlpha=fi(t,.4,.8);
+  txt('Laya 的 3 个"评估视角"：',ox,legY+8,{size:13,bold:true,color:C.white});
+  const legend=[
+    {k:'foodDist 距食物', c:C.red,  d:'格子数 · 越小越好'},
+    {k:'space 可走空间',  c:C.blue,  d:'灌水能淹到 · 越大越安全'},
+    {k:'danger 周围危险', c:C.orange,d:'墙/蛇身数 · 越小越好'},
+  ];
+  legend.forEach((g,i)=>{
+    const gx=ox+i*(GW*cs/3);
+    txt('● '+g.k,gx,legY+30,{size:12,color:g.c,bold:true});
+    txt(g.d,gx,legY+52,{size:10,color:C.gray});
+  });
+  ctx.globalAlpha=1;
+
+  // 依次演示 3 个方向（一次只亮一个，避免重叠）
+  const delays={UP:1.2,DOWN:5.2,RIGHT:9.2};
+  const cardH=Math.min(112,(GH*cs-16)/3);
+  let cardY=oy;
+
+  cands.forEach(c=>{
+    const p=fi(t,delays[c.n],.8);
+    if(p<=0) return;
+    const col=DIR_COLOR[c.n];
+    const nx=head.x+c.x, ny=head.y+c.y;
+
+    // 棋盘高亮当前演示方向
+    ctx.globalAlpha=p;
+    ctx.fillStyle=col+'55';
+    ctx.fillRect(ox+nx*cs,oy+ny*cs,cs,cs);
+    ctx.strokeStyle=col; ctx.lineWidth=2;
+    ctx.strokeRect(ox+nx*cs+1,oy+ny*cs+1,cs-2,cs-2);
+    ctx.lineWidth=1;
+    arrow(ox+head.x*cs+cs/2,oy+head.y*cs+cs/2, ox+nx*cs+cs/2,oy+ny*cs+cs/2, col,2);
+    txt(DIR_CN[c.n],ox+nx*cs+cs/2,oy+ny*cs+cs/2,{size:Math.max(10,Math.min(13,cs*0.26)),color:'#fff',align:'center',bold:true});
+
+    // Flood Fill 灌水动画
+    const ffP=fi(t,delays[c.n]+.6,1.2);
+    const fcells=getFloodCells(nx,ny,snake,GW,GH);
+    const showN=Math.floor(fcells.length*easeOut(ffP));
+    for(let j=0;j<showN;j++){
+      ctx.fillStyle=col;
+      ctx.globalAlpha=0.10;
+      ctx.fillRect(ox+fcells[j].x*cs+1,oy+fcells[j].y*cs+1,cs-2,cs-2);
+    }
+    ctx.globalAlpha=Math.min(1,p);
+    if(ffP>0){
+      // 计数器放到棋盘内侧底部，避开图例
+      const bw2=fs(13)*22+24, bx2=ox+GW*cs/2-bw2/2, by2=oy+GH*cs-fs(13)-24;
+      ctx.globalAlpha=0.85;
+      box(bx2,by2,bw2,fs(13)+14,{bg:'#0a0a1a',border:col+'66',r:6});
+      ctx.globalAlpha=Math.min(1,p);
+      txt(`灌水测试：已淹 ${showN} 格 → space = ${c.sp}`,ox+GW*cs/2,by2+(fs(13)+14)/2,{size:13,color:C.blue,align:'center',bold:true});
+    }
+    ctx.globalAlpha=1;
+
+    // 右侧卡片：中文逐项解释怎么算
+    ctx.globalAlpha=p;
+    box(panelX,cardY,panelW,cardH,{bg:col+'0a',border:col+'55'});
+    txt(`方向 ${c.n} ${DIR_CN[c.n]}`,panelX+12,cardY+16,{size:14,bold:true,color:col});
+    const lh=Math.min(26,(cardH-32)/3);
+    txt('① 距食物',panelX+12,cardY+36,{size:12,color:C.red,bold:true});
+    txt(`|${nx}-${food.x}| + |${ny}-${food.y}| = ${c.fd} 格`,panelX+110,cardY+36,{size:12,color:C.white,font:"'Consolas',monospace"});
+    txt('② 可走空间',panelX+12,cardY+36+lh,{size:12,color:C.blue,bold:true});
+    txt(`灌水可达 ${c.sp} 格 ${c.sp>=snake.length?'≥ 蛇长✓安全':'< 蛇长✗危险'}`,panelX+110,cardY+36+lh,{size:12,color:c.sp>=snake.length?C.green:C.red});
+    txt('③ 周围危险',panelX+12,cardY+36+2*lh,{size:12,color:C.orange,bold:true});
+    txt(`紧邻有 ${c.dc} 个墙/蛇身`,panelX+110,cardY+36+2*lh,{size:12,color:C.white});
+    cardY+=cardH+8;
+    ctx.globalAlpha=1;
+  });
+
+  bottomBar([
+    {t:'距食物近 + 空间大 + 危险少 = 好方向', c:C.white},
+    {t:'下一步：把 3 个指标按权重合成一个分数', c:C.orange, s:12},
+  ], fi(t,12.5,1));
+}
+
+// ═══════════════════ SCENE 4: 打分与 Laya 的输出 ═══════════════════
+function r4(t){
+  txt('④ 打分：权重从哪来 → Laya 输出动作',W/2,34,{size:25,bold:true,color:C.green,align:'center'});
+  pipeBar(1, 56);
+
+  const L=layout(Math.min(460, Math.max(340, W*0.32)), 150);
+  const {ox,oy,cs,panelX,panelW}=L;
+  const head=snake[0];
+  const cands=decide(head,food,snake,dir,GW,GH);
+  cands.sort((a,b)=>b.s-a.s);
+
+  drawGrid(ox,oy,cs,GW,GH,snake,food);
+
+  // 棋盘下方：公式 + 权重来源解释（中文）
+  const boardW=GW*cs;
+  const belowY=oy+GH*cs+8;
+  const pf=fi(t,.4,.8);
+  ctx.globalAlpha=pf;
+  const fh=Math.max(120,Math.min(H-64-belowY, (H-(20+2*Math.max(24,fs(14)+10))-56)-8-belowY));
+  box(ox,belowY,boardW,fh,{bg:'#0d0d20',border:C.green+'44'});
+  const fLines=[
+    {t:'评分公式（三项指标 × 各自主权重）',s:13,c:C.white,b:true},
+    {t:'总分 = 距食物×(-2) + 空间×0.5 + 危险×(-3)',s:14,c:C.green,b:true,m:true},
+    {t:'权重 = Laya 的"价值观"，决定它在乎什么：',s:12,c:C.white},
+    {t:'· 距离每远 1 格扣 2 分 —— 很想吃食物',s:11,c:C.red},
+    {t:'· 空间每 1 格奖 0.5 分 —— 给自己留后路（防困死）',s:11,c:C.blue},
+    {t:'· 危险每 1 个扣 3 分 —— 最怕立刻撞死',s:11,c:C.orange},
+    {t:'真实 Laya：权重由海量标注样本训练自动学出；本演示手工设 -2/+0.5/-3',s:11,c:C.gray},
+  ];
+  const flh=(fh-18)/fLines.length;
+  fLines.forEach((l,j)=>{
+    txt(l.t,ox+12,belowY+12+j*flh+flh/2-2,{size:l.s,color:l.c,bold:l.b,font:l.m?"'Consolas',monospace":''});
+  });
+  ctx.globalAlpha=1;
+
+  // 右侧：逐方向得分明细（中文）
+  const maxS=Math.max(...cands.map(x=>Math.abs(x.s)),1);
+  cands.forEach((c,i)=>{
+    const p=fi(t,1.2+i*1.5,.8);
+    if(p<=0) return;
+    const col=DIR_COLOR[c.n];
+    const isBest=(i===0)&&p>0.6;
+    const ch=Math.min(110,(GH*cs-8)/3);
+    const cy=oy+i*(ch+4);
+    ctx.globalAlpha=p;
+    box(panelX,cy,panelW,ch,{bg:col+'0a',border:isBest?C.green:col+'55'});
+    txt(`${c.n} ${DIR_CN[c.n]}`,panelX+12,cy+15,{size:13,bold:true,color:col});
+    if(isBest) txt('★ 最高分',panelX+panelW-12,cy+15,{size:12,bold:true,color:C.green,align:'right'});
+
+    const row2=cy+42;
+    // 三等分列：指标 原始值→加权贡献（避免放大字号后固定列错位）
+    const cw3=panelW/3;
+    const cell3=(i,lbl,raw,term,col3)=>{
+      const cx=panelX+8+i*cw3;
+      txt(lbl,cx,row2-9,{size:10,color:col3});
+      txt(`${raw} → ${term}`,cx,row2+8,{size:11,color:C.white,font:"'Consolas',monospace"});
+    };
+    cell3(0,'距食物×(-2)',`${c.fd}格`,`${-c.fd*2}分`,C.red);
+    cell3(1,'空间×0.5',`${c.sp}格`,`+${(c.sp*0.5).toFixed(1)}分`,C.blue);
+    cell3(2,'危险×(-3)',`${c.dc}个`,`${-c.dc*3}分`,C.orange);
+
+    const row3=cy+66;
+    const barX=panelX+62, barW=panelW-140;
+    txt('总分',panelX+12,row3+7,{size:12,bold:true,color:C.white});
+    ctx.fillStyle=col+'33';
+    ctx.fillRect(barX,row3,barW,14);
+    ctx.fillStyle=col+(isBest?'dd':'88');
+    ctx.fillRect(barX,row3,barW*Math.abs(c.s)/maxS*easeOut(p),14);
+    txt(c.s.toFixed(1),panelX+panelW-12,row3+7,{size:15,bold:true,color:isBest?C.green:C.white,align:'right',font:"'Consolas',monospace"});
+    if(isBest && p>0.6) txt('← 最高',barX+barW*Math.abs(c.s)/maxS+18,row3+7,{size:11,color:C.green});
+
+    // 最优方向在棋盘上高亮
+    if(isBest){
+      const nx=head.x+c.x, ny=head.y+c.y;
+      ctx.fillStyle=C.green+'55';
+      ctx.fillRect(ox+nx*cs,oy+ny*cs,cs,cs);
+      ctx.strokeStyle=C.green; ctx.lineWidth=2;
+      ctx.strokeRect(ox+nx*cs+1,oy+ny*cs+1,cs-2,cs-2);
+      ctx.lineWidth=1;
+    }
+    ctx.globalAlpha=1;
+  });
+
+  // Laya 输出框（面板底部，argmax 之后出现）
+  const po=fi(t,6.5,1);
+  if(po>0){
+    ctx.globalAlpha=po;
+    const oy2=oy+GH*cs-72;
+    box(panelX,oy2,panelW,64,{bg:'#00e67612',border:C.green,r:10});
+    txt('Laya 的最终输出：',panelX+12,oy2+18,{size:12,color:C.gray});
+    txt(`{ "动作": "${cands[0].n}" } → 蛇向${DIR_CN[cands[0].n]}走一格`,panelX+12,oy2+44,{size:13,bold:true,color:C.green,font:"'Consolas',monospace"});
+    ctx.globalAlpha=1;
+  }
+
+  bottomBar([
+    {t:'3 个总分摆在一起，Laya 选最高分的输出 —— 这就是它的"决定"(argmax)', c:C.white},
+    {t:'对比：远 2 格 = 扣 4 分，多 1 个危险 = 扣 3 分 —— 权重决定蛇的性格', c:C.gray, s:12},
+  ], fi(t,8.5,1));
+}
+
+// ═══════════════════ SCENE 5: 执行移动 ═══════════════════
+function r5(t){
+  txt('⑤ 执行：输出的动作驱动游戏',W/2,34,{size:26,bold:true,color:C.green,align:'center'});
+
+  const L=layout(Math.min(360,Math.max(270,W*0.25)));
+  const {ox,oy,cs,panelX,panelW}=L;
+  const head=snake[0];
+  const cands=decide(head,food,snake,dir,GW,GH);
+  cands.sort((a,b)=>b.s-a.s);
+  const best=cands[0];
+  const newHead={x:head.x+best.x, y:head.y+best.y};
+
+  const pMove=fi(t,.8,.9);
+  const pDone=fi(t,2.2,.5);
+  pipeBar(pMove<1?2:3, 56);
+
+  if(pDone<1){
+    drawGrid(ox,oy,cs,GW,GH,snake,food);
+    const hcx=ox+head.x*cs+cs/2, hcy=oy+head.y*cs+cs/2;
+    const ncx=ox+newHead.x*cs+cs/2, ncy=oy+newHead.y*cs+cs/2;
+    arrow(hcx,hcy,ncx,ncy,C.green,3);
+    box(hcx-cs*1.4,hcy-cs*1.7-4,cs*2.8,32,{bg:C.green+'22',border:C.green,r:6});
+    txt(`输出 "${best.n}"`,hcx,hcy-cs*1.7+12,{size:13,color:C.green,align:'center',bold:true,font:"'Consolas',monospace"});
+    if(pMove>0 && pMove<1){
+      const ep=easeOut(pMove);
+      const interpHead={x:head.x+best.x*ep, y:head.y+best.y*ep};
+      const newSnake=[{x:Math.round(interpHead.x),y:Math.round(interpHead.y)},...snake.slice(0,-1)];
+      drawGrid(ox,oy,cs,GW,GH,newSnake,food,[{x:newHead.x,y:newHead.y,color:C.green+'33'}]);
+    }
+  }
+  if(pDone>=1){
+    const newSnake=[newHead,...snake.slice(0,-1)];
+    drawGrid(ox,oy,cs,GW,GH,newSnake,food);
+
+    box(panelX,oy+10,panelW,156,{bg:'#00e67608',border:C.green+'55'});
+    txt('这一步发生了什么',panelX+15,oy+32,{size:14,bold:true,color:C.green});
+    txt(`Laya 输出: "${best.n}" ${DIR_CN[best.n]}`,panelX+15,oy+56,{size:13,color:C.white,font:"'Consolas',monospace"});
+    txt(`蛇头 (${head.x},${head.y}) → (${newHead.x},${newHead.y})`,panelX+15,oy+80,{size:13,color:C.green});
+    const fd1=Math.abs(head.x-food.x)+Math.abs(head.y-food.y);
+    const fd2=Math.abs(newHead.x-food.x)+Math.abs(newHead.y-food.y);
+    txt(`距食物: ${fd1} 格 → ${fd2} 格  ✓ 更近了`,panelX+15,oy+104,{size:13,color:C.orange});
+    txt(`游戏收到动作后：x 不变, y 减 1`,panelX+15,oy+128,{size:12,color:C.gray,font:"'Consolas',monospace"});
+    txt(`耗时约 33 毫秒`,panelX+15,oy+148,{size:12,color:C.blue});
+  }
+
+  bottomBar([
+    {t:'一次决策循环完成：读状态 → 评 3 方向 → 打分 → 输出动作 → 执行', c:C.white},
+    {t:'下一场景：连续重复这个过程，直到吃到食物', c:C.orange, s:12},
+  ], fi(t,3.5,1));
+}
+
+// ═══════════════════ SCENE 6: 连续决策 ═══════════════════
+let step2Snake, step2Food, step2Dir, step2History, step2Last;
+function resetStep2(){
+  step2Snake=snake.map(s=>({...s}));
+  step2Food={...food};
+  step2Dir={...dir};
+  step2History=[];
+  step2Last=-1;
+}
+resetStep2();
+
+function r6(t){
+  txt('⑥ 连续决策：每走一步都重新评估一遍',W/2,34,{size:25,bold:true,color:C.green,align:'center'});
+  pipeBar(1, 56);
+
+  // 每 0.6s 走一步，直到吃到食物
+  const interval=0.6;
+  const n=Math.floor((t-0.8)/interval);
+  const lastH=step2History[step2History.length-1];
+  while(step2Last<n && !(lastH&&lastH.type==='food')){
+    step2Last=n;
+    const hd=step2Snake[0];
+    const cands=decide(hd,step2Food,step2Snake,step2Dir,GW,GH);
+    cands.sort((a,b)=>b.s-a.s);
+    const best=cands.find(c=>c.safe);
+    if(!best) break;
+    step2Dir={x:best.x,y:best.y};
+    const nh={x:hd.x+best.x,y:hd.y+best.y};
+    step2Snake.unshift(nh);
+    if(nh.x===step2Food.x&&nh.y===step2Food.y){
+      step2History.push({type:'food',dir:best.n,score:best.s.toFixed(1)});
+      break;
+    } else {
+      step2Snake.pop();
+      step2History.push({type:'move',dir:best.n,score:best.s.toFixed(1)});
+    }
+  }
+
+  const L=layout(Math.min(380,Math.max(290,W*0.26)));
+  const {ox,oy,cs,panelX,panelW}=L;
+  const hd=step2Snake[0];
+  const ate=step2History.length&&step2History[step2History.length-1].type==='food';
+
+  drawGrid(ox,oy,cs,GW,GH,step2Snake,ate?null:step2Food,[{x:hd.x,y:hd.y,color:C.green+'22'}]);
+
+  if(!ate){
+    ctx.strokeStyle=C.red+'55'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(ox+hd.x*cs+cs/2,oy+hd.y*cs+cs/2);
+    ctx.lineTo(ox+step2Food.x*cs+cs/2,oy+step2Food.y*cs+cs/2);
+    ctx.stroke(); ctx.setLineDash([]);
+    const fdNow=Math.abs(hd.x-step2Food.x)+Math.abs(hd.y-step2Food.y);
+    txt(`距食物还有 ${fdNow} 格`,ox+GW*cs/2,oy-12,{size:13,color:C.red,align:'center',bold:true});
+  }
+
+  // 右侧：Laya 输出流水账
+  box(panelX,oy,panelW,GH*cs,{bg:'#0a0a1a',border:'#1a1a2a'});
+  txt('Laya 每次的输出记录',panelX+panelW/2,oy+22,{size:14,bold:true,color:C.gray,align:'center'});
+  step2History.forEach((h,i)=>{
+    const y=oy+52+i*36;
+    txt(`第${i+1}步 "${h.dir}" ${DIR_CN[h.dir]}`,panelX+12,y,{size:13,bold:true,color:DIR_COLOR[h.dir],font:"'Consolas',monospace"});
+    txt(`得分 ${h.score}`,panelX+panelW-12,y,{size:11,color:C.gray,align:'right',font:"'Consolas',monospace"});
+    if(h.type==='food') txt('🎉 吃到食物！',panelX+12,y+17,{size:12,bold:true,color:C.orange});
+  });
+
+  const fd=Math.abs(hd.x-step2Food.x)+Math.abs(hd.y-step2Food.y);
+  bottomBar([
+    {t: ate ? '抵达食物！每一格都是重新算分后选出来的' : `已走 ${step2History.length} 步 · 距食物 ${fd} 格 · 分数一路走高`, c: ate?C.orange:C.white},
+    {t:'蛇没有"规划整条路线"，只选当前得分最高的下一步 —— 贪心 + 灌水法安全校验', c:C.gray, s:12},
+  ], fi(t,2,1));
+}
+
+// ═══════════════════ SCENE 7: 吃到食物 ═══════════════════
+function r7(t){
+  txt('⑦ 吃到食物：决策闭环完成',W/2,34,{size:26,bold:true,color:C.orange,align:'center'});
+  pipeBar(3, 56);
+
+  const L=layout(Math.min(360,Math.max(270,W*0.25)));
+  const {ox,oy,cs,panelX,panelW}=L;
+
+  const finalSnake=[...step2Snake];
+  drawGrid(ox,oy,cs,GW,GH,finalSnake,null,[{x:finalSnake[0].x,y:finalSnake[0].y,color:C.orange+'44'}]);
+
+  const p=fi(t,.3,.6);
+  if(p>0){
+    const hcx=ox+finalSnake[0].x*cs+cs/2, hcy=oy+finalSnake[0].y*cs+cs/2;
+    for(let i=0;i<3;i++){
+      const tt=(t*0.8+i*0.33)%1;
+      ctx.strokeStyle=C.orange;
+      ctx.globalAlpha=(1-tt)*0.5;
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(hcx,hcy,cs/2+tt*cs*2.5,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+
+  ctx.globalAlpha=p;
+  box(panelX,oy+10,panelW,180,{bg:'#ffab4008',border:C.orange+'55'});
+  txt('本轮成果',panelX+15,oy+32,{size:15,bold:true,color:C.orange});
+  txt(`决策次数: ${step2History.length} 次`,panelX+15,oy+58,{size:13,color:C.white});
+  txt(`蛇身: 3 段 → ${finalSnake.length} 段（吃到会变长）`,panelX+15,oy+80,{size:12,color:C.green});
+  txt(`每次决策: ~33ms`,panelX+15,oy+104,{size:13,color:C.blue});
+  txt(`总耗时: ${step2History.length*33}ms`,panelX+15,oy+126,{size:13,color:C.purple});
+  txt('接下来新食物出现 → 循环重新开始',panelX+15,oy+152,{size:12,color:C.gray});
+  ctx.globalAlpha=1;
+
+  bottomBar([
+    {t:'Laya 决策的特点：快（33ms）· 稳（灌水法保证不困死）· 可解释（每步都有分数）', c:C.white},
+  ], fi(t,2,1));
+}
+
+// ═══════════════════ SCENE 8: 实际速度 ═══════════════════
+let mSnake,mFood,mDir,mScore,mDecCount,mSteps,mHistory,mPrevT=-1;
+function resetMontage(){
+  mSnake=[{x:6,y:6},{x:5,y:6},{x:4,y:6}];
+  mFood={x:9,y:3}; mDir={x:1,y:0};
+  mScore=0; mDecCount=0; mSteps=0; mHistory=[]; mPrevT=-1;
+}
+resetMontage();
+
+// ── 真实 Laya 桥接（laya_bridge.py, 端口 8890）──
+const BRIDGE='http://127.0.0.1:8890';
+let bridgeOK=null, bridgeInfo=null, mPend=false, mMsSum=0, mMsMax=0, mProbeAt=0;
+function dirName(d){ return d.x===1?'RIGHT':d.x===-1?'LEFT':d.y===-1?'UP':'DOWN'; }
+function probeBridge(){
+  if(bridgeOK!==null && performance.now()-mProbeAt<5000) return;
+  mProbeAt=performance.now();
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),1200);
+  fetch(BRIDGE+'/health',{signal:ctl.signal}).then(r=>r.json()).then(j=>{
+    clearTimeout(to);
+    if(!j.model&&j.models) j.model=(j.models[j.default]||{}).model;  // 多版本桥接的 /health 格式
+    bridgeOK=!!j.ok; bridgeInfo=j;
+  }).catch(()=>{ clearTimeout(to); bridgeOK=false; });
+}
+probeBridge();
+function critFor(cands){
+  const c={};
+  cands.forEach(x=>{ c[x.n]= x.safe ? `foodDist=${x.fd} space=${x.sp} danger=${x.dc}`
+    : 'BLOCKED: hits wall or body; foodDist=0 space=0 danger=4'; });
+  return c;
+}
+function realStep(){
+  if(mPend||bridgeOK!==true||!playing) return;
+  mPend=true;
+  const head=mSnake[0];
+  const cands=decide(head,mFood,mSnake,mDir,GW,GH);
+  const payload={state:{game:'snake',board:`${GW}x${GH}`,head:[head.x,head.y],
+    body:mSnake.map(s=>[s.x,s.y]),food:[mFood.x,mFood.y],facing:dirName(mDir)},
+    criteria:critFor(cands)};
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),4000);
+  fetch(BRIDGE+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload),signal:ctl.signal})
+    .then(r=>r.json())
+    .then(j=>{ clearTimeout(to);
+      if(j.error){ bridgeOK=false; mPend=false; return; }
+      applyReal(j,cands);
+    })
+    .catch(e=>{ clearTimeout(to); bridgeOK=false; mPend=false; });
+}
+function applyReal(j,cands){
+  mPend=false;
+  const best=cands.find(c=>c.n===j.choice);
+  mDecCount++; mMsSum+=j.ms; if(j.ms>mMsMax)mMsMax=j.ms;
+  const head=mSnake[0];
+  const nh=best?{x:head.x+best.x,y:head.y+best.y}:null;
+  const p=j.probabilities?j.probabilities[j.choice]:null;
+  if(!best||!isSafe(nh.x,nh.y,mSnake,GW,GH)){
+    mHistory.unshift({type:'crash',dec:mDecCount,dir:j.choice,score:mScore,ms:j.ms,p});
+    while(mHistory.length>9) mHistory.pop();
+    mSnake=[{x:6,y:6},{x:5,y:6},{x:4,y:6}];
+    mFood={x:Math.floor(Math.random()*GW),y:Math.floor(Math.random()*GH)};
+    mDir={x:1,y:0}; mScore=0; mDecCount=0;
+    return;
+  }
+  mDir={x:best.x,y:best.y};
+  mSnake.unshift(nh);
+  if(nh.x===mFood.x&&nh.y===mFood.y){
+    mScore++;
+    mHistory.unshift({type:'food',score:mScore,dec:mDecCount,dir:j.choice,s:best.s.toFixed(1),ms:j.ms,p});
+    do{mFood={x:Math.floor(Math.random()*GW),y:Math.floor(Math.random()*GH)};}
+    while(mSnake.some(s=>s.x===mFood.x&&s.y===mFood.y));
+  } else {
+    mSnake.pop();
+    mHistory.unshift({type:'move',score:mScore,dec:mDecCount,dir:j.choice,s:best.s.toFixed(1),ms:j.ms,p});
+  }
+  if(mHistory.length>9) mHistory.pop();
+}
+
+function mStep(){
+  const head=mSnake[0];
+  const cands=decide(head,mFood,mSnake,mDir,GW,GH);
+  cands.sort((a,b)=>b.s-a.s);
+  const best=cands.find(c=>c.safe);
+  if(!best) return false;
+  mDir={x:best.x,y:best.y};
+  mDecCount++;
+  const nh={x:head.x+best.x,y:head.y+best.y};
+  if(!isSafe(nh.x,nh.y,mSnake,GW,GH)) return false;
+  mSnake.unshift(nh);
+  if(nh.x===mFood.x&&nh.y===mFood.y){
+    mScore++;
+    mHistory.unshift({type:'food',score:mScore,dec:mDecCount,dir:best.n,s:best.s.toFixed(1)});
+    do{mFood={x:Math.floor(Math.random()*GW),y:Math.floor(Math.random()*GH)};}
+    while(mSnake.some(s=>s.x===mFood.x&&s.y===mFood.y));
+  } else {
+    mSnake.pop();
+    mHistory.unshift({type:'move',score:mScore,dec:mDecCount,dir:best.n,s:best.s.toFixed(1)});
+  }
+  if(mHistory.length>9) mHistory.pop();
+  return true;
+}
+
+function r8(t){
+  if(t<mPrevT) resetMontage();
+  mPrevT=t;
+  probeBridge();
+  const real=bridgeOK===true;
+  txt(real?'⑧ 全速运行：这一次是真实 Laya（421M）在显卡上现场决策'
+          :'⑧ 全速运行：拆解完了，现在看真实速度',W/2,34,{size:25,bold:true,color:C.green,align:'center'});
+  pipeBar(1, 56);
+
+  if(real){
+    // 真实模式：每帧最多发一次请求，速率由 GPU 推理自然节流
+    realStep();
+  } else {
+    // 回退：按 33ms 节拍推进内置启发式（追帧不超 8 步/帧）
+    const need=Math.floor(Math.max(0,(t-0.4))/0.033);
+    let guard=0;
+    while(mSteps<need && guard<8){
+      mSteps++; guard++;
+      if(!mStep()){
+        mHistory.unshift({type:'restart',dec:mDecCount,dir:'RESET',score:mScore,s:'—'});
+        while(mHistory.length>9) mHistory.pop();
+        mSnake=[{x:6,y:6},{x:5,y:6},{x:4,y:6}];
+        mFood={x:Math.floor(Math.random()*GW),y:Math.floor(Math.random()*GH)};
+        mDir={x:1,y:0}; mScore=0; mDecCount=0;
+      }
+    }
+  }
+
+  const L=layout(Math.min(360,Math.max(280,W*0.25)), 64);
+  const {ox,oy,cs,panelX,panelW}=L;
+  const head=mSnake[0];
+  drawGrid(ox,oy,cs,GW,GH,mSnake,mFood,[{x:head.x,y:head.y,color:C.green+'22'}]);
+
+  box(panelX,oy,panelW,122,{bg:'#111',border:C.darkGray});
+  txt(`得分 ${mScore}`,panelX+15,oy+26,{size:24,bold:true,color:C.green});
+  txt(`决策 ${mDecCount} 次 · 蛇长 ${mSnake.length}`,panelX+15,oy+54,{size:12,color:C.white});
+  if(real){
+    const avg=mDecCount? (mMsSum/mDecCount).toFixed(1) : '—';
+    txt(`决策引擎: 真实 Laya ✓ ${(bridgeInfo&&bridgeInfo.model)||''}`,panelX+15,oy+78,{size:12,color:C.green});
+    txt(`实测平均 ${avg} ms/步 · 峰值 ${mMsMax.toFixed(0)} ms`,panelX+15,oy+100,{size:12,color:C.blue});
+  } else {
+    txt(`决策引擎: 内置启发式（Laya 服务离线）`,panelX+15,oy+78,{size:12,color:C.orange});
+    txt(`启动 laya_bridge.py 后回到本页即自动接入真实模型`,panelX+15,oy+100,{size:11,color:C.gray});
+  }
+
+  box(panelX,oy+132,panelW,Math.max(120,GH*cs-132),{bg:'#0a0a1a',border:'#1a1a2a'});
+  txt(real?'真实 Laya 输出流（%=模型置信度）':'Laya 输出流（上=最新，每一步都记）',panelX+12,oy+150,{size:12,bold:true,color:C.gray});
+  mHistory.forEach((h,i)=>{
+    const y=oy+174+i*26;
+    if(h.type==='restart'){
+      txt(`⚠ 撞了，重开一局（上局得分 ${h.score}）`,panelX+12,y,{size:11,color:C.red});
+    } else if(h.type==='crash'){
+      txt(`⚠ 第${h.dec}步 "${h.dir}" 模型选了死路，重开（上局 ${h.score} 分）`,panelX+12,y,{size:11,color:C.red});
+    } else if(real){
+      const pct=h.p!=null?` ${(h.p*100).toFixed(0)}%`:'';
+      const ms=h.ms!=null?` ${h.ms.toFixed(0)}ms`:'';
+      const line=`#${h.dec} "${h.dir}" ${DIR_CN[h.dir]||''}${pct}${ms}`;
+      if(h.type==='food') txt(line+` 🎉吃到! 得${h.score}分`,panelX+12,y,{size:11,color:C.orange,font:"'Consolas',monospace"});
+      else txt(line,panelX+12,y,{size:11,color:C.green,font:"'Consolas',monospace"});
+    } else {
+      const line=`#${h.dec} "${h.dir}" ${DIR_CN[h.dir]||''} 分${h.s}`;
+      if(h.type==='food') txt(line+` 🎉吃到! 得${h.score}分`,panelX+12,y,{size:11,color:C.orange,font:"'Consolas',monospace"});
+      else txt(line,panelX+12,y,{size:11,color:C.green,font:"'Consolas',monospace"});
+    }
+  });
+
+  // 底部流水线灯
+  const by=oy+GH*cs+12;
+  const bw=Math.min(860,W*0.82), bx=(W-bw)/2;
+  box(bx,by,bw,44,{bg:'#111',border:C.darkGray});
+  const phase=(t/0.066)%4;
+  const stages=['读状态','评方向','打分','输出动作'];
+  const pcols=[C.orange,C.blue,C.purple,C.green];
+  const seg=bw/4;
+  stages.forEach((s,i)=>{
+    const active=Math.floor(phase)===i;
+    txt(s,bx+seg*(i+0.5),by+14,{size:12,color:active?pcols[i]:C.gray,align:'center',bold:active});
+    if(active){
+      ctx.fillStyle=pcols[i]+'33';
+      ctx.fillRect(bx+seg*i+24,by+26,seg-48,4);
+    }
+    if(i<3) txt('→',bx+seg*(i+1),by+14,{size:12,color:C.darkGray,align:'center'});
+  });
+
+  bottomBar([
+    real?{t:'屏幕上的每一步都是刚下载的 421M 真实权重现算的，不是预设动画', c:C.green}
+        :{t:'这就是 Laya 的卖点：分类式决策极快，不用等大模型逐字生成', c:C.white},
+  ], fi(t,2,1));
+}
+
+// ═══════════════════ SCENE 9: 总结 ═══════════════════
+function r9(t){
+  txt('总结：Laya 是怎么"想"的',W/2,56,{size:Math.min(32,W/30),bold:true,color:C.green,align:'center'});
+  pipeBar(-1, 88);
+
+  const lines=[
+    {t:'输入：蛇头/食物/蛇身/方向 几组坐标，不要画面',c:C.orange},
+    {t:'候选：排除掉头，只剩 3 个方向',c:C.blue},
+    {t:'评估：距食物 + 可走空间(灌水法) + 周围危险',c:C.purple},
+    {t:'打分：按权重求和，最高分即输出动作 (argmax)',c:C.green},
+    {t:'权重=价值观：真实 Laya 由标注数据训练学出',c:C.yellow},
+    {t:'33ms 一步 · CPU 可跑 · 1GB 内存 · 每步可解释',c:C.red},
+  ];
+  const areaTop=136, areaBot=H-176;
+  const rowH=Math.min(48,(areaBot-areaTop)/lines.length);
+  lines.forEach((l,i)=>{
+    const lp=fi(t,.6+i*.5,.6);
+    if(lp<=0) return;
+    ctx.globalAlpha=lp;
+    const lw=Math.min(680,W*0.82), lx=(W-lw)/2, ly=areaTop+i*rowH;
+    box(lx,ly,lw,rowH-8,{bg:l.c+'08',border:l.c+'33',r:6});
+    txt(`✓`,lx+24,ly+(rowH-8)/2,{size:15,bold:true,color:l.c});
+    txt(l.t,lx+50,ly+(rowH-8)/2,{size:Math.min(15,W/58),color:C.white});
+    ctx.globalAlpha=1;
+  });
+
+  const pf=fi(t,4,1);
+  ctx.globalAlpha=pf;
+  txt('快 · 便宜 · 可离线 · 可解释',W/2,areaTop+lines.length*rowH+24,{size:Math.min(22,W/40),bold:true,color:C.green,align:'center'});
+  ctx.globalAlpha=1;
+}
+
+// ── Renderer map ──
+// ═══════════════════ SCENE ⑨: 真实 Laya 是怎么配置的 ═══════════════════
+function wrapCN(text,maxW,size,font){
+  ctx.font=`${fs(size)}px ${font||"'Microsoft YaHei','Segoe UI',sans-serif"}`;
+  const lines=[]; let cur='';
+  for(const ch of text){
+    if(ctx.measureText(cur+ch).width>maxW){lines.push(cur);cur=ch;}
+    else cur+=ch;
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+function rCfg(t){
+  txt('⑨ 真实 Laya 是怎么配置的？',W/2,30,{size:25,bold:true,color:C.green,align:'center'});
+  txt('左边 = 刚才演示里手工写死的规则；右边 = 真实 Laya 中对应的配置/训练方式',W/2,56,{size:13,color:C.gray,align:'center'});
+
+  const rows=[
+    {k:'打分权重', c:C.yellow,
+     demo:'score = -距离×2 + 空间×0.5 - 危险×3\n数字是手工挑的',
+     real:'权重＝模型参数本身：用海量 (状态 → 更优动作) 标注样本做微调训练，交叉熵损失 + 梯度下降自动学出，没人手设过 -2/0.5/-3'},
+    {k:'空间判断', c:C.purple,
+     demo:'显式跑一遍灌水法(BFS)\n数出可走空格',
+     real:'不需要显式算法：ModernBERT 编码器（骨干 4.21 亿参数）直接读状态文本，从训练数据里"学会"空间和危险感'},
+    {k:'非法动作', c:C.blue,
+     demo:'代码里手动排除 180° 掉头',
+     real:'动作掩码（Action Mask）：输出前把非法动作的 logit 置为 -∞，模型在结构上就不可能选到'},
+    {k:'输入配置', c:C.orange,
+     demo:'蛇头/食物/蛇身/方向\n几组坐标 JSON',
+     real:'状态序列化成固定格式字符串 → 分词 → 送进编码器。训练和推理必须用同一套模板，否则分布不一致'},
+    {k:'输出配置', c:C.green,
+     demo:'3 个候选取最高分\n(argmax)',
+     real:'4 分类头输出 4 个 logits（上/下/左/右）→ argmax 取动作。是"分类"不是"逐字生成"，所以才快'},
+    {k:'部署配置', c:C.red,
+     demo:'浏览器里的演示动画',
+     real:'本地纯 CPU 推理：单次决策 ~33ms · 内存占用 ~1GB · 无需 GPU / 联网，每台机器都能跑'},
+  ];
+
+  const areaTop=76, areaBot=H-140;
+  const total=Math.min(W-70,1500), x0=(W-total)/2;
+  const keyW=78, demoW=Math.min(330,total*0.27), gap=26;
+  const realW=total-keyW-demoW-gap*2-8;
+  const rowH=(areaBot-areaTop)/rows.length;
+
+  rows.forEach((r,i)=>{
+    const p=fi(t,0.6+i*1.35,0.7);
+    if(p<=0) return;
+    ctx.globalAlpha=p;
+    const y=areaTop+i*rowH+4, h=rowH-8;
+
+    // 分类标签
+    txt(r.k,x0,y+h/2,{size:13,bold:true,color:r.c});
+
+    // 演示手工做法
+    const dx=x0+keyW;
+    box(dx,y,demoW,h,{bg:r.c+'08',border:r.c+'44',r:6});
+    r.demo.split('\n').forEach((ln,j,arr)=>{
+      txt(ln,dx+10,y+h/2+(j-(arr.length-1)/2)*16+1,{size:11.5,color:C.white,font:"'Consolas',monospace"});
+    });
+
+    // 箭头
+    arrow(dx+demoW+4,y+h/2,dx+demoW+gap-4,y+h/2,r.c,1.5);
+
+    // 真实 Laya 配置
+    const rx=dx+demoW+gap;
+    box(rx,y,realW,h,{bg:'#0d0d20',border:'#2a2a44',r:6});
+    const lines=wrapCN(r.real,realW-20,11.5);
+    const lh=Math.min(16,(h-12)/Math.max(1,lines.length));
+    lines.forEach((ln,j)=>{
+      txt(ln,rx+10,y+h/2+(j-(lines.length-1)/2)*lh+1,{size:11.5,color:C.gray});
+    });
+    ctx.globalAlpha=1;
+  });
+
+  bottomBar([
+    {t:'一句话：演示里的"公式"是给人看懂的简化版；真实 Laya 把这些判断全部压进训练出来的权重里', c:C.white},
+  ], fi(t,9.5,1));
+}
+
+const R=[r0,r1,r2,r3,r4,r5,r6,r7,r8,rCfg,r9];
+
+// 直达链接：…laya-snake-demo.html#s8 或 ?s=8 = 直接打开场景⑧（真实模型运行）
+{ let sm = location.hash.match(/#s(\d+)/) || location.search.match(/[?&]s=(\d+)/);
+  if (sm) goTo(Math.max(0, Math.min(scenes.length-1, parseInt(sm[1],10)-1))); }
+// 现场演示快捷键：← → 切场景，空格 暂停/播放
+addEventListener('keydown', e => {
+  if (e.key==='ArrowRight') nextScene();
+  else if (e.key==='ArrowLeft') prevScene();
+  else if (e.key===' ') { e.preventDefault(); togglePlay(); }
+});
+
+// ── Main loop ──
+function frame(now){
+  const dt=(now-lastT)/1000; lastT=now;
+  if(playing){
+    sTime+=dt;
+    if(sTime>=scenes[cur].dur){
+      if(cur<scenes.length-1){goTo(cur+1);}
+      else{playing=false;document.getElementById('btnPlay').textContent='▶ 重播';document.getElementById('btnPlay').classList.remove('active');}
+    }
+  }
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  if(R[cur]) R[cur](sTime);
+  const pct=sTime/scenes[cur].dur;
+  ctx.fillStyle=C.green+'33'; ctx.fillRect(0,H-3,W*pct,3);
+  ctx.fillStyle=C.green; ctx.fillRect(0,H-3,W*pct,2);
+  requestAnimationFrame(frame);
+}
+updProg();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

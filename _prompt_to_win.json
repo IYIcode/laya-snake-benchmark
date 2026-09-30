@@ -1,0 +1,23 @@
+[
+ {
+  "seed": 1001,
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 4641,
+  "multi_legal_rate": 0.51
+ },
+ {
+  "seed": 1002,
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 5166,
+  "multi_legal_rate": 0.45
+ },
+ {
+  "seed": 1003,
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 5781,
+  "multi_legal_rate": 0.49
+ }
+]

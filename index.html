@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>用一条贪吃蛇，实测开源决策小模型 Laya</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232b3a;--fg:#e8edf5;--dim:#8b97ab;
+      --gold:#f0b429;--green:#3ecf8e;--red:#ef5b5b;--blue:#5aa7f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+     line-height:1.7;padding:48px 24px 80px}
+.wrap{max-width:1040px;margin:0 auto}
+.kicker{color:var(--gold);letter-spacing:3px;font-size:13px}
+h1{font-size:36px;margin:10px 0 6px;letter-spacing:.5px}
+h1 span{color:var(--gold)}
+.sub{color:var(--dim);font-size:16px;margin-bottom:28px}
+h2{font-size:21px;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--gold)}
+p{color:#c6cfdd;font-size:16px;margin:8px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;
+      text-decoration:none;color:var(--fg);display:block;transition:.15s}
+.card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.card b{display:block;font-size:17px;margin-bottom:6px}
+.card i{font-style:normal;color:var(--dim);font-size:13.5px;line-height:1.6}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:400;font-size:13.5px}
+td.n{color:var(--gold);font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.note{background:#151b28;border:1px solid var(--line);border-left:3px solid var(--red);
+      border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14.5px;color:#d8e0ee}
+.note b{color:var(--red)}
+code,pre{font-family:Consolas,monospace;font-size:14px}
+pre{background:#0d1119;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow:auto;color:#bcd}
+.invite{margin-top:34px;background:linear-gradient(180deg,#182031,#121722);border:1px solid var(--gold);
+        border-radius:14px;padding:18px 20px}
+.invite a{color:var(--gold);word-break:break-all;font-family:Consolas,monospace;font-size:14.5px}
+footer{color:var(--dim);font-size:13.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">AI 实 测 报 告</div>
+  <h1>用一条贪吃蛇，实测 <span>Laya</span>：Jev 的平替能不能干活？</h1>
+  <div class="sub">12×12 考场 · 六级演进（零样本 → 小抄微调 → 裸棋盘训练 → 纯算法 → 提示词）·
+   每个数字都能点开原始档案核</div>
+
+  <p>结论一句话：<b>训练后能干活，但要摆对位置——程序管感知和兜底，模型管高频选择。</b>
+     它约 30ms 做一次决策、约 1GB 显存可端侧；但裸感知不行（未训练时 23 局全 0 分），
+     通用理解也不如闭源大训练量的 Jev，智力就是"选择题选手"水平。</p>
+
+  <h2>先看三个会动的页面</h2>
+  <div class="cards">
+    <a class="card" href="laya-snake-cockpit.html">
+      <b>五路选手驾驶舱 →</b>
+      <i>①未训练（实测死亡重放）②微调（400 手真日志逐手回放）③环契约+跨身计数（吃 141 格实录食物）
+         ④环保险算法（此刻真跑）⑤通用 Agent 我本人（141 真实回放）</i>
+    </a>
+    <a class="card" href="laya-snake-myrun.html">
+      <b>我本人的 141 通关局 →</b>
+      <i>4370 步、351 秒、0 跨身，逐手可回放；点"下一段"能看到我每次问自己时发出的原始载荷</i>
+    </a>
+    <a class="card" href="laya-snake-theater.html">
+      <b>同台实测剧院 →</b>
+      <i>六条赛道并排对照，看"读小抄"和"看棋盘"到底差在哪</i>
+    </a>
+    <a class="card" href="laya-ppt.html">
+      <b>完整 17 页报告 →</b>
+      <i>含讲解备注（按 N 键开启）；底部标了每页数据的档案出处</i>
+    </a>
+  </div>
+
+  <h2>关键数字</h2>
+  <table>
+    <tr><th>阶段</th><th>成绩</th><th>说明</th></tr>
+    <tr><td>零样本（未训练）</td><td class="n">0.0</td><td>23 局全 0 分，每步都选"上"，第 6~7 步撞顶墙</td></tr>
+    <tr><td>小抄微调（五级配方）</td><td class="n">36 → 39 → 43.1 → 48.8 → 59.8</td>
+        <td>加死口袋警告、食物距离惩罚、两步洪水视野；反超手写 BFS 老师 53</td></tr>
+    <tr><td>裸棋盘 1 小时训练</td><td class="n">44.2</td><td>只喂 0/1/2/3 数字阵，困死 5/8 局</td></tr>
+    <tr><td>纯代码环保险算法</td><td class="n">141</td><td>几十行，12 个种子全部通关，不用 GPU</td></tr>
+    <tr><td>模型 + 跨身计数</td><td class="n">141</td><td>契约不改、零掩码、零代码代答</td></tr>
+    <tr><td>我（通用 Agent）</td><td class="n">141 / 4370 步</td><td>同契约同种子，351 秒、0 跨身</td></tr>
+  </table>
+
+  <div class="note">
+    <b>一处口径更正（我们自己挂在明面上）：</b>视频里"seed1002 最好一局 4592 步全程零违规"这句，
+    按档案应改为「4592 步通关，其中 <b>2 步</b>跨身，环不等式遵守率 99.96%」——
+    档案 <code>_jumpfood_1002.json</code> 里写的是 <code>jumps: 2</code>，
+    而 <code>obey_rate: 1.0</code> 是三位小数四舍五入的结果（2/4593≈0.0004）。
+    细节见 <a href="VERIFY.md" style="color:var(--blue)">VERIFY.md</a>。
+  </div>
+
+  <h2>怎么自己核对</h2>
+  <pre>git clone &lt;本仓库&gt; &amp;&amp; cd &lt;仓库&gt;
+python -m http.server 8895          # 页面要读档案 JSON，需走 http
+# 浏览器打开 http://127.0.0.1:8895/laya-snake-cockpit.html
+
+python _dev/summarize_tune_runs.py  # 复算小抄阶梯的每级均分
+python -c "import json;print(json.load(open('_jumpfood_1002.json',encoding='utf-8')))"
+python -c "import json;print(json.load(open('_me_ledger_result.json',encoding='utf-8')))"</pre>
+  <p>逐条清单（含"哪些是实录、哪些是示意、哪些没归档"）在
+     <a href="VERIFY.md" style="color:var(--blue)">VERIFY.md</a>。</p>
+
+  <div class="invite">
+    <b>关于工具：</b>这份报告背后几百局真跑、几万步落盘，由 Qoder 完成，指令是在手机上发的。<br>
+    想试的话可以用我的邀请链接（新用户有 Pro 试用 + Credits，具体以活动页为准）：<br>
+    <a href="https://qoder.cn/activities?referral_code=Ykkr49CgiCQpI8fijiiXU4MdTVt8Z4uX"
+       target="_blank" rel="noopener">https://qoder.cn/activities?referral_code=Ykkr49CgiCQpI8fijiiXU4MdTVt8Z4uX</a>
+  </div>
+
+  <footer>
+    所有实验、页面与三分钟视频均由本项目实测生成；需要模型的赛道需接本地桥（默认停用）。
+    没有逐手档案的部分一律标注"示意"，不用动画冒充推理。
+  </footer>
+</div>
+</body>
+</html>

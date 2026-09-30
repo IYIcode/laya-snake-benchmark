@@ -1,0 +1,30 @@
+[
+ {
+  "seed": 1000,
+  "arm": "formula_calc",
+  "food": 37,
+  "cause": "cap",
+  "steps": 19999,
+  "obey_rate": 0.976,
+  "first_rule_break": {
+   "step": 1188,
+   "food": 37,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  }
+ },
+ {
+  "seed": 1001,
+  "arm": "formula_calc",
+  "food": 73,
+  "cause": "cap",
+  "steps": 19999,
+  "obey_rate": 0.988,
+  "first_rule_break": {
+   "step": 514,
+   "food": 19,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  }
+ }
+]

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一局贪吃蛇的数据流 · 游戏 → 模型 → 动作</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;background:#07070f;overflow:hidden;
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:#dfe3f0}
+  #stage{position:fixed;width:1280px;height:720px;background:radial-gradient(1200px 600px at 50% -10%,#141a33,#0a0c18 60%);
+    border:1px solid #232a45;border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+  /* 顶栏 */
+  header{display:flex;align-items:center;justify-content:space-between;height:48px;flex:0 0 auto}
+  header h1{font-size:20px;color:#eaf0ff;letter-spacing:.5px}
+  header h1 small{font-size:12.5px;color:#8ea0d0;font-weight:400;margin-left:10px}
+  .status{display:flex;gap:8px;align-items:center;font-size:12.5px}
+  .pill{background:#141a30;border:1px solid #2b3557;border-radius:20px;padding:4px 11px;color:#b9c6ee;white-space:nowrap}
+  .pill b{color:#fff}
+  .pill.ok{border-color:#2f7a52;color:#8ff0bb}.pill.bad{border-color:#8a3b3b;color:#ff9d9d}
+  /* 主体 */
+  main{flex:1 1 auto;display:flex;gap:8px;align-items:stretch;min-height:0}
+  .col{background:#0e1220;border:1px solid #232a45;border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;min-height:0}
+  .col h2{font-size:13.5px;color:#cdd8ff;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .col h2 .n{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#2b3d78;color:#dce6ff;
+    align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .arrow{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:22px;color:#4f6bb5;font-size:26px}
+  /* 棋盘列 */
+  #boardCol{width:322px;flex:0 0 auto}
+  canvas{background:#0b0e1a;border:1px solid #232a45;border-radius:8px;image-rendering:pixelated}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .chip{font-size:12px;background:#141a30;border:1px solid #2b3557;border-radius:6px;padding:3px 8px;color:#b9c6ee}
+  .chip b{color:#fff;font-size:13px}
+  .ctrl{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+  button{font-family:inherit;font-size:12.5px;background:#1c2547;color:#dce6ff;border:1px solid #35406b;
+    border-radius:7px;padding:6px 11px;cursor:pointer}
+  button:hover{background:#26315c}button:disabled{opacity:.4;cursor:not-allowed}
+  button.pri{background:#2f6b46;border-color:#3f8f5f}button.pri:hover{background:#378254}
+  .seedrow{display:flex;gap:6px;align-items:center;margin-top:7px;font-size:12px;color:#9fb0dd}
+  .seedrow input[type=number]{width:88px;background:#0b0e1a;border:1px solid #2b3557;color:#fff;border-radius:6px;padding:4px 6px;font-family:inherit}
+  .seedrow label{display:flex;gap:4px;align-items:center;cursor:pointer}
+  .spd{display:flex;gap:6px;align-items:center;margin-top:7px;font-size:12px;color:#9fb0dd}
+  .legend{display:flex;gap:10px;font-size:11.5px;color:#93a2cd;margin-top:7px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:-1px}
+  /* 面板①状态 */
+  #stateCol{width:250px;flex:0 0 auto}
+  .gridpre{font-family:Consolas,"Courier New",monospace;font-size:14px;line-height:1.28;color:#7fe0a8;
+    background:#080b14;border:1px solid #1e2740;border-radius:7px;padding:6px 8px;letter-spacing:2px}
+  .kv{margin-top:9px}
+  .kv .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;padding:3px 0;border-bottom:1px dashed #1e2740}
+  .kv .row .k{color:#93a2cd}.kv .row .v{font-family:Consolas,monospace;color:#ffd479;font-size:14px}
+  .kv .row .g{color:#6f7fa8;font-size:11px}
+  .subttl{font-size:12px;color:#8ea0d0;margin:10px 0 3px;font-weight:700}
+  /* 面板②输入 */
+  #inCol{width:330px;flex:1 1 auto}
+  .instrbox{font-family:Consolas,monospace;font-size:11px;line-height:1.5;color:#a9b6dd;background:#080b14;
+    border:1px solid #1e2740;border-radius:7px;padding:7px 8px;height:132px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .instrbox .hl{color:#ffd479;background:#2a2410;border-radius:3px}
+  .crit{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+  .crit .opt{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;background:#0b0f1c;border:1px solid #1e2740;border-radius:6px;padding:4px 7px}
+  .crit .opt .d{font-family:Consolas,monospace;color:#7fb0ff;font-weight:700;min-width:44px}
+  .crit .opt .t{color:#c3cdea;font-family:Consolas,monospace;word-break:break-word}
+  .crit .opt.blocked{border-color:#7a3b3b}.crit .opt.blocked .t{color:#ff9d9d}
+  .bytes{font-size:11px;color:#6f7fa8;margin-top:7px}
+  /* 面板③输出 */
+  #outCol{width:250px;flex:0 0 auto}
+  .choice{font-size:15px;color:#9fb0dd;text-align:center;margin:2px 0 8px}
+  .choice b{display:block;font-size:34px;color:#ffe08a;line-height:1.1;margin-top:2px}
+  .bars{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+  .bar{font-size:12px}
+  .bar .lab{display:flex;justify-content:space-between;color:#a9b6dd;margin-bottom:2px}
+  .bar .lab .p{font-family:Consolas,monospace;color:#dfe3f0}
+  .bar .track{height:14px;background:#0b0f1c;border:1px solid #1e2740;border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;background:linear-gradient(90deg,#2f6bd8,#5b9bff);width:0;transition:width .18s}
+  .bar.win .fill{background:linear-gradient(90deg,#c99a1e,#ffe08a)}
+  .bar.win .lab{color:#ffe08a;font-weight:700}
+  .outmeta{margin-top:10px;font-size:12px;color:#93a2cd;display:flex;flex-direction:column;gap:3px}
+  .outmeta b{color:#fff;font-family:Consolas,monospace}
+  .result{margin-top:8px;font-size:13px;padding:6px 8px;border-radius:7px;background:#0b0f1c;border:1px solid #1e2740;color:#c3cdea;min-height:34px}
+  .result.eat{border-color:#2f7a52;color:#8ff0bb}.result.die{border-color:#8a3b3b;color:#ff9d9d}.result.jump{border-color:#8a6b2f;color:#ffd479}
+  .waiting{color:#6f7fa8;font-size:12.5px;text-align:center;margin-top:30px}
+  /* 底部日志 */
+  #logbar{flex:0 0 auto;height:74px;background:#0e1220;border:1px solid #232a45;border-radius:10px;padding:6px 10px;overflow:auto}
+  #logbar .lt{font-size:11.5px;color:#8ea0d0;margin-bottom:3px;font-weight:700}
+  #logbar .ln{font-family:Consolas,monospace;font-size:11.5px;color:#9fb0dd;padding:1px 0;white-space:pre-wrap}
+  #logbar .ln b{color:#ffe08a}#logbar .ln .w{color:#ff9d9d}#logbar .ln .g{color:#8ff0bb}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <h1>一局贪吃蛇的数据流<small>每走一步，看清「游戏给我什么 → 我收到什么 → 我输出什么」</small></h1>
+    <div class="status">
+      <span class="pill" id="engPill">桥接检测中…</span>
+      <span class="pill">种子 <b id="seedShow">—</b></span>
+      <span class="pill">步 <b id="stepShow">0</b></span>
+      <span class="pill">分 <b id="scoreShow">0</b></span>
+      <span class="pill" id="alivePill">存活</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- 棋盘 + 控制 -->
+    <div class="col" id="boardCol">
+      <h2><span class="n">棋</span>实时棋盘 <span style="color:#6f7fa8;font-weight:400;font-size:11.5px">12×12</span></h2>
+      <canvas id="cv" width="312" height="312"></canvas>
+      <div class="legend">
+        <span><i style="background:#4dd2ff"></i>蛇头(2)</span>
+        <span><i style="background:#1f8fb8"></i>蛇身(1)</span>
+        <span><i style="background:#e33"></i>食物(3)</span>
+        <span><i style="background:#161b2e"></i>空(0)</span>
+      </div>
+      <div class="chips">
+        <span class="chip">长 <b id="lenShow">3</b></span>
+        <span class="chip">跨身计数 <b id="jcShow">0</b></span>
+        <span class="chip">守规 <b id="obeyShow">100%</b></span>
+      </div>
+      <div class="spd">速度<input type="range" id="spd" min="60" max="1500" step="20" value="520" style="flex:1">
+        <span id="spdVal" style="font-family:Consolas;color:#ffd479">520ms</span></div>
+      <div class="ctrl">
+        <button class="pri" id="btnRun">▶ 开始</button>
+        <button id="btnStep">⏭ 单步</button>
+        <button id="btnReset">↻ 重开</button>
+      </div>
+      <div class="seedrow">
+        <label><input type="checkbox" id="scripted"> 重放已验证通关局(seed1002)</label>
+      </div>
+      <div class="seedrow">种子<input type="number" id="seedIn" value="0"><button id="btnSeed">用此种子重开</button></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ① 游戏引擎产出 -->
+    <div class="col" id="stateCol">
+      <h2><span class="n">1</span>游戏引擎产出的数据</h2>
+      <div style="font-size:11.5px;color:#8ea0d0;margin-bottom:5px">这一步，游戏把棋盘算成文字喂给我：</div>
+      <div class="gridpre" id="gridPre"></div>
+      <div class="subttl">loopAhead · 沿环前瞻距离</div>
+      <div class="kv">
+        <div class="row"><span class="k">foodAhead <span class="g">到食物</span></span><span class="v" id="laFood">—</span></div>
+        <div class="row"><span class="k">bodyAhead <span class="g">到最近身(含尾)</span></span><span class="v" id="laBody">—</span></div>
+        <div class="row"><span class="k">bodyGoAhead <span class="g">到最近身(不含尾)</span></span><span class="v" id="laGo">—</span></div>
+      </div>
+      <div class="subttl">本局累计计数</div>
+      <div class="kv">
+        <div class="row"><span class="k">jumpCount <span class="g">本局已跨身几次</span></span><span class="v" id="stJump">—</span></div>
+      </div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ② 我收到的完整输入 -->
+    <div class="col" id="inCol">
+      <h2><span class="n">2</span>我（模型）收到的完整输入</h2>
+      <div class="subttl" style="margin-top:0">规则指令 instructions <span style="color:#6f7fa8;font-weight:400">（<span style="color:#ffd479">金色</span>=本配方额外加的一句）</span></div>
+      <div class="instrbox" id="instrBox"></div>
+      <div class="subttl">四个候选选项 criteria <span style="color:#6f7fa8;font-weight:400">（每步的坐标事实，不含答案）</span></div>
+      <div class="crit" id="critBox"></div>
+      <div class="bytes" id="bytesInfo"></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ③ 我的输出 -->
+    <div class="col" id="outCol">
+      <h2><span class="n">3</span>我的输出</h2>
+      <div class="choice">选中方向<b id="outChoice">—</b></div>
+      <div class="bars" id="bars"></div>
+      <div class="outmeta">
+        <span>置信度 confidence：<b id="outConf">—</b></span>
+        <span>推理耗时：<b id="outMs">—</b></span>
+        <span>动作掩码：<b id="outMask">—</b></span>
+        <span>模型：<b id="outModel">cycle（环契约微调）</b></span>
+      </div>
+      <div class="result" id="outResult">按「开始」或「单步」走一步，这里显示模型的真实输出。</div>
+    </div>
+  </main>
+
+  <div id="logbar">
+    <div class="lt">逐步日志（每行 = 收到什么 → 选什么 → 结果）</div>
+    <div id="logLines"></div>
+  </div>
+</div>
+
+<script>
+// ── 常量 & 环境（与 laya-snake-theater.html / _rlcd_cycle.py 逐字对齐）──
+const BRIDGE='http://127.0.0.1:8890', MODEL='cycle', GW=12, GH=12, N=26;
+const DIRS={UP:[0,-1],DOWN:[0,1],LEFT:[-1,0],RIGHT:[1,0]}, KN=['UP','DOWN','LEFT','RIGHT'];
+const DIRCN={UP:'上',DOWN:'下',LEFT:'左',RIGHT:'右'};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function stepSnake(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return[snake,true,false,'wall'];
+  if(body.some(s=>s[0]===nx&&s[1]===ny))return[snake,true,false,'body'];
+  const ns=[[nx,ny],...snake];if(!eat)ns.pop();return[ns,false,eat,''];}
+function gridRows(snake,food){const g=Array.from({length:GH},()=>Array(GW).fill('0'));
+  snake.forEach((s,i)=>{g[s[1]][s[0]]=i===0?'2':'1';});g[food[1]][food[0]]='3';return g.map(r=>r.join(''));}
+function landOf(nx,ny,snake,food){
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return'wall';
+  const tail=snake[snake.length-1];
+  const inBody=snake.slice(1,-1).some(s=>s[0]===nx&&s[1]===ny);
+  const isTail=snake.length>1&&nx===tail[0]&&ny===tail[1];
+  const eat=nx===food[0]&&ny===food[1];
+  if(inBody)return'body';if(isTail)return eat?'body':'vacating';return'free';}
+function cidx(x,y){if(y===0)return x===0?0:133+(11-x);const s=1+11*x;return(x%2===0)?s+(y-1):s+(11-y);}
+function loopAhead(snake,food){const hi=cidx(snake[0][0],snake[0][1]);
+  const D=p=>((cidx(p[0],p[1])-hi)%144+144)%144;let m1=144,m2=144;
+  for(let i=1;i<snake.length;i++){const dd=D(snake[i]);if(i<snake.length-1&&dd<m2)m2=dd;if(dd<m1)m1=dd;}
+  return{foodAhead:D(food),bodyAhead:m1,bodyGoAhead:m2};}
+function loopSafe(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const land=landOf(nx,ny,snake,food);if(land==='wall'||land==='body')return false;
+  const hi=cidx(hx,hy),cd=((cidx(nx,ny)-hi)%144+144)%144;
+  const la=loopAhead(snake,food),df=la.foodAhead,m1=la.bodyAhead,m2=la.bodyGoAhead;
+  const eat=nx===food[0]&&ny===food[1];return eat?cd<=m1-1:(cd<=m2-1&&cd<=df);}
+function cycleState(snake,food){return{game:'snake',board:'12x12',grid:gridRows(snake,food),loopAhead:loopAhead(snake,food)};}
+function cycleCrit(snake,food,mask){if(mask===undefined)mask=true;const[hx,hy]=snake[0],hi=cidx(hx,hy),c={};
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;const land=landOf(nx,ny,snake,food);
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?'NEARER to food':(dn>dc?'FARTHER from food':'SAME distance');
+    const base=land==='wall'?`(${nx},${ny}) wall, ${rel}`:`(${nx},${ny}) ${land}, ${rel}, cyc=${((cidx(nx,ny)-hi)%144+144)%144}`;
+    c[d]=(mask&&!loopSafe(snake,food,d))?'BLOCKED: '+base:base;}
+  return c;}
+const CYCLE_RULES="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. The 144 cells also form one closed loop (loopAhead in the state gives loop distances from the head: bodyAhead = steps forward to the nearest body cell counting the tail, bodyGoAhead = same but excluding the tail cell (it vacates unless you eat this move), foodAhead = steps forward to the food). Each option lists its landing cell facts and cyc = its forward loop steps from the head. A move is loop-safe if it does not pass your body or the food on the loop: when the move does not eat, cyc <= bodyGoAhead-1 and cyc <= foodAhead; when the move eats the food, cyc <= bodyAhead-1. Never pick a wall or body landing. Among loop-safe moves prefer the one closest to the food.";
+const JUMP_TAIL=" The state also carries jumpCount = how many times earlier in THIS game you already picked a move whose cyc was greater than bodyGoAhead, i.e. jumped across your own body on the loop. Every one of those jumps makes the game harder to finish: your goal is to finish the game with jumpCount = 0.";
+const INSTR=CYCLE_RULES+JUMP_TAIL;
+// seed1002 已验证通关局食物序列（141 项，_jump_record.py 实测：141 WIN 4592 步 obey 100%）
+const SCRIPT_FOODS=[[11,4],[9,0],[4,8],[3,0],[2,9],[6,7],[11,0],[2,8],[2,10],[10,3],[11,11],[1,0],[5,6],[6,1],[9,9],[0,5],[5,4],[0,10],[7,9],[7,8],[9,1],[1,4],[9,3],[8,2],[1,8],[4,5],[7,4],[10,6],[9,4],[9,7],[9,8],[2,11],[3,9],[11,9],[5,7],[9,4],[10,2],[10,8],[7,1],[10,1],[3,1],[11,1],[0,9],[1,11],[6,1],[11,7],[0,11],[9,8],[0,8],[5,4],[5,2],[8,9],[3,1],[10,3],[6,1],[1,9],[10,2],[2,1],[8,7],[11,0],[1,10],[1,5],[2,7],[3,5],[8,5],[3,4],[6,3],[0,11],[6,9],[8,10],[3,10],[3,5],[5,8],[6,7],[7,1],[4,11],[3,1],[9,2],[0,10],[2,4],[8,10],[1,3],[1,8],[3,8],[4,2],[6,7],[6,11],[7,9],[9,10],[3,9],[4,3],[4,4],[5,7],[6,9],[0,11],[4,8],[6,8],[5,9],[1,10],[1,5],[3,1],[7,8],[8,1],[9,3],[4,9],[7,11],[8,7],[9,10],[1,10],[1,7],[2,4],[3,2],[5,11],[5,6],[1,2],[1,6],[0,11],[2,9],[4,8],[5,1],[7,11],[8,9],[9,8],[9,3],[9,2],[10,6],[11,6],[11,3],[11,1],[10,10],[11,5],[10,0],[8,0],[3,0],[1,11],[1,6],[1,3],[1,2],[1,1],[2,2],[2,3]];
+
+// ── 对局状态 ──
+let snake,food,facing,score,steps,jc,alive,cause,seed,rng,scripted=false;
+let nStep=0,nObey=0,running=false,busy=false,lastPayload=null,lastResp=null;
+
+function placeRandom(){const occ=new Set(snake.map(s=>s[0]+','+s[1]));const free=[];
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(!occ.has(x+','+y))free.push([x,y]);
+  if(!free.length)return null;return free[Math.floor(rng()*free.length)];}
+function assignFood(){
+  if(scripted&&SCRIPT_FOODS.length){const c=SCRIPT_FOODS[score];
+    if(!c){food=null;return;}                     // 141 格吃完=通关
+    const occ=new Set(snake.map(s=>s[0]+','+s[1]));
+    if(!occ.has(c[0]+','+c[1])){food=[c[0],c[1]];return;}}
+  food=placeRandom();}
+function newGame(s){
+  seed=(s===undefined?((document.getElementById('seedIn').value|0)||Math.floor(Math.random()*900000)+100000):s);
+  document.getElementById('seedIn').value=seed;
+  scripted=document.getElementById('scripted').checked;
+  rng=mulberry32(seed);
+  snake=[[6,6],[5,6],[4,6]];facing='RIGHT';score=0;steps=0;jc=0;alive=true;cause='';
+  nStep=0;nObey=0;running=false;busy=false;setRunBtn();
+  if(scripted){food=[SCRIPT_FOODS[0][0],SCRIPT_FOODS[0][1]];}else{food=placeRandom();}
+  document.getElementById('logLines').innerHTML='';
+  document.getElementById('seedShow').textContent=seed+(scripted?' · 重放':'');
+  buildOutputEmpty();
+  drawBoard();renderStateAndInput();ui();
+}
+
+// ── 渲染 ──
+function drawBoard(){const g=document.getElementById('cv').getContext('2d');
+  g.fillStyle='#0b0e1a';g.fillRect(0,0,GW*N,GH*N);
+  g.strokeStyle='#161b2e';for(let i=0;i<=GW;i++){g.beginPath();g.moveTo(i*N+.5,0);g.lineTo(i*N+.5,GH*N);g.stroke();
+    g.beginPath();g.moveTo(0,i*N+.5);g.lineTo(GW*N,i*N+.5);g.stroke();}
+  if(food){g.fillStyle='#e33';g.fillRect(food[0]*N+4,food[1]*N+4,N-8,N-8);}
+  snake.forEach((s,i)=>{g.fillStyle=i===0?(alive?'#4dd2ff':'#7a8899'):(alive?'#1f8fb8':'#4a5570');
+    g.fillRect(s[0]*N+1,s[1]*N+1,N-2,N-2);});}
+function renderStateAndInput(){
+  const st=cycleState(snake,food);st.jumpCount=jc;
+  const crit=cycleCrit(snake,food,false);       // 零掩码：绝不出现 BLOCKED
+  lastPayload={model:MODEL,state:st,instructions:INSTR,criteria:crit};
+  // ①
+  document.getElementById('gridPre').textContent=st.grid.join('\n');
+  document.getElementById('laFood').textContent=st.loopAhead.foodAhead;
+  document.getElementById('laBody').textContent=st.loopAhead.bodyAhead;
+  document.getElementById('laGo').textContent=st.loopAhead.bodyGoAhead;
+  document.getElementById('stJump').textContent=jc;
+  // ②
+  document.getElementById('instrBox').innerHTML=esc(CYCLE_RULES)+'<span class="hl">'+esc(JUMP_TAIL)+'</span>';
+  document.getElementById('critBox').innerHTML=KN.map(d=>{
+    const blocked=crit[d].startsWith('BLOCKED');
+    return '<div class="opt'+(blocked?' blocked':'')+'"><span class="d">'+d+'</span><span class="t">'+esc(crit[d])+'</span></div>';}).join('');
+  const bytes=new Blob([JSON.stringify(lastPayload)]).size;
+  document.getElementById('bytesInfo').textContent='本步逐字节发给模型的请求 ≈ '+bytes+' 字节 · state 键序 game,board,grid,loopAhead,jumpCount · 选项 '+KN.length+' 个 · 掩码：关（纯提示词）';
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function buildOutputEmpty(){
+  document.getElementById('outChoice').textContent='—';
+  document.getElementById('bars').innerHTML=KN.map(d=>'<div class="bar" data-d="'+d+'"><div class="lab"><span>'+d+' '+DIRCN[d]+'</span><span class="p">—</span></div><div class="track"><div class="fill"></div></div></div>').join('');
+  document.getElementById('outConf').textContent='—';document.getElementById('outMs').textContent='—';document.getElementById('outMask').textContent='—';
+  const r=document.getElementById('outResult');r.className='result';r.textContent='按「开始」或「单步」走一步，这里显示模型的真实输出。';}
+function renderOutput(resp,stepInfo){
+  document.getElementById('outChoice').textContent=DIRCN[resp.choice]+' · '+resp.choice;
+  const pr=resp.probabilities||{};
+  KN.forEach(d=>{const el=document.querySelector('.bar[data-d="'+d+'"]');const p=pr[d]||0;
+    el.classList.toggle('win',d===resp.choice);
+    el.querySelector('.p').textContent=(p*100).toFixed(1)+'%';
+    el.querySelector('.fill').style.width=(p*100).toFixed(1)+'%';});
+  document.getElementById('outConf').textContent=(resp.confidence!=null?resp.confidence.toFixed(3):'—');
+  document.getElementById('outMs').textContent=(resp.ms!=null?resp.ms.toFixed(0)+' ms':'—');
+  document.getElementById('outMask').textContent=(resp.masked?'本步有方向被清零':'关（无掩码）');
+  const r=document.getElementById('outResult');
+  r.className='result'+(stepInfo.cls?' '+stepInfo.cls:'');
+  r.innerHTML=stepInfo.html;
+}
+function ui(){
+  document.getElementById('stepShow').textContent=steps;
+  document.getElementById('scoreShow').textContent=score;
+  document.getElementById('lenShow').textContent=snake.length;
+  document.getElementById('jcShow').textContent=jc;
+  document.getElementById('obeyShow').textContent=(nStep?(100*nObey/nStep):100).toFixed(1)+'%';
+  const ap=document.getElementById('alivePill');
+  if(alive){ap.className='pill ok';ap.textContent='存活';}
+  else{ap.className='pill bad';ap.textContent=(cause==='通关'?'🏆 通关':'☠ '+cause);}
+}
+function logLine(txt){const box=document.getElementById('logLines');
+  const div=document.createElement('div');div.className='ln';div.innerHTML=txt;
+  box.insertBefore(div,box.firstChild);}
+function setRunBtn(){document.getElementById('btnRun').textContent=running?'⏸ 暂停':'▶ 开始';}
+
+// ── 桥接调用 ──
+async function callBridge(payload){
+  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),60000);
+  try{const r=await fetch(BRIDGE+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},signal:ac.signal,body:JSON.stringify(payload)});
+    return await r.json();}
+  finally{clearTimeout(t);}}
+
+// ── 走一步 ──
+async function step(){
+  if(!alive)return;
+  if(!food){alive=false;cause='通关';drawBoard();ui();logLine('<b>步'+steps+'</b> 棋盘填满 → <span class="g">🏆 通关 '+score+' 分</span>');running=false;setRunBtn();return;}
+  renderStateAndInput();                       // 先亮出①②：这一步我收到了什么
+  const jcBefore=jc;
+  document.getElementById('outChoice').textContent='…';
+  document.getElementById('outResult').className='result';document.getElementById('outResult').textContent='模型推理中…';
+  let resp;
+  try{resp=await callBridge(lastPayload);}
+  catch(e){setEng(false,'桥接离线：'+e);alive=false;cause='桥接离线';ui();running=false;setRunBtn();
+    logLine('<b>步'+steps+'</b> <span class="w">桥接调用失败 '+esc(e)+'</span>');return;}
+  lastResp=resp;setEng(true);
+  const dir=resp.choice;
+  const obey=loopSafe(snake,food,dir);         // 落子前判环安全（与 Python n_jump 同口径）
+  nStep++;if(obey)nObey++;else jc++;
+  const[ns,died,ate,why]=stepSnake(snake,food,dir);
+  const prob=((resp.probabilities||{})[dir]||0);
+  let html,cls,logRes;
+  if(died){alive=false;cause=(why==='wall'?'撞墙':'撞身');cls='die';
+    html='☠ 选择 <b>'+dir+'</b> → '+cause+'，本局结束于 '+score+' 分';
+    logRes='<span class="w">'+cause+'死 @'+score+'分</span>';}
+  else if(ate){score++;cls='eat';html='🍎 选择 <b>'+dir+'</b> → 吃到食物，+'+'1 分（共 '+score+'）';
+    logRes='<span class="g">吃到 +1（'+score+'分）</span>';}
+  else{html='选择 <b>'+dir+'</b> → 安全前进（未吃到）';logRes='安全前进';}
+  if(!obey&&!died){cls=cls||'jump';html+='　<span style="color:#ffd479">⚠ 这一步跨过身体，跨身计数 '+jcBefore+'→'+jc+'</span>';}
+  if(!obey&&died){html+='　<span style="color:#ffd479">⚠ 跨身违规</span>';}
+  snake=ns;steps++;facing=dir;
+  if(ate){assignFood();}
+  renderOutput(resp,{html,cls});
+  drawBoard();ui();
+  logLine('<b>步'+steps+'</b> 收 jumpCount='+jcBefore+' · 选 '+dir+' '+DIRCN[dir]+'(p='+(prob*100).toFixed(0)+'%)'+(obey?'':' <span style="color:#ffd479">跨身!</span>')+' → '+logRes);
+  if(!alive){running=false;setRunBtn();}
+}
+
+// ── 循环 & 控制 ──
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function tick(){
+  if(!running||busy)return;busy=true;
+  try{await step();}catch(e){setEng(false,'异常：'+e);}
+  busy=false;
+  if(alive&&running)setTimeout(tick,+document.getElementById('spd').value);
+  else setRunBtn();}
+function setEng(ok,txt){const p=document.getElementById('engPill');
+  if(ok===undefined){p.className='pill';p.textContent=txt;return;}
+  p.className='pill '+(ok?'ok':'bad');p.textContent=txt||(ok?'桥接在线 ✓':'桥接离线');}
+async function checkBridge(){
+  try{const r=await fetch(BRIDGE+'/health',{signal:AbortSignal.timeout(4000)});const j=await r.json();
+    setEng(!!(j.ok&&j.models&&j.models[MODEL]),'桥接在线 ✓ '+Object.keys(j.models||{}).join('/')+' · 本页用 '+MODEL);}
+  catch(e){setEng(false,'桥接离线（请先启动 8890）');}}
+
+document.getElementById('btnRun').onclick=()=>{if(!alive){newGame();}running=!running;setRunBtn();if(running)tick();};
+document.getElementById('btnStep').onclick=async()=>{if(busy)return;running=false;setRunBtn();busy=true;try{await step();}catch(e){setEng(false,''+e);}busy=false;};
+document.getElementById('btnReset').onclick=()=>newGame();
+document.getElementById('btnSeed').onclick=()=>newGame(document.getElementById('seedIn').value|0);
+document.getElementById('scripted').onchange=()=>newGame();
+document.getElementById('spd').oninput=e=>document.getElementById('spdVal').textContent=e.target.value+'ms';
+
+// ── 固定舞台缩放（1280×720 → 视口，居中）──
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);const st=document.getElementById('stage');
+  st.style.transform='scale('+s+')';st.style.transformOrigin='0 0';
+  st.style.left=((innerWidth-1280*s)/2)+'px';st.style.top=((innerHeight-720*s)/2)+'px';}
+addEventListener('resize',fit);
+
+// ── 启动 ──
+(async function boot(){
+  fit();
+  document.getElementById('seedIn').value=Math.floor(Math.random()*900000)+100000;
+  buildOutputEmpty();
+  await checkBridge();
+  newGame();
+  setInterval(()=>{if(!busy)checkBridge();},8000);
+})();
+</script>
+</body>
+</html>

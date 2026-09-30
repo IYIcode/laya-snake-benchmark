@@ -1,0 +1,50 @@
+[
+ {
+  "seed": 1000,
+  "arm": "advice",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 5
+ },
+ {
+  "seed": 1001,
+  "arm": "advice",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 3
+ },
+ {
+  "seed": 1002,
+  "arm": "advice",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 5
+ },
+ {
+  "seed": 1000,
+  "arm": "answer",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 5
+ },
+ {
+  "seed": 1001,
+  "arm": "answer",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 3
+ },
+ {
+  "seed": 1002,
+  "arm": "answer",
+  "model": "laya",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 5
+ }
+]

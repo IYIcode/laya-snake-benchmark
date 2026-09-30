@@ -1,0 +1,53 @@
+[
+ {
+  "seed": 1000,
+  "arm": "hintJumpOnly",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 2,
+  "obey_rate": 0.667,
+  "first_rule_break": {
+   "step": 2,
+   "food": 0,
+   "choice": "UP",
+   "opt": "(6,7) body, NEARER to food, cyc=143"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1001,
+  "arm": "hintJumpOnly",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 2,
+  "obey_rate": 0.667,
+  "first_rule_break": {
+   "step": 2,
+   "food": 0,
+   "choice": "UP",
+   "opt": "(6,7) body, NEARER to food, cyc=143"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1002,
+  "arm": "hintJumpOnly",
+  "food": 0,
+  "cause": "wall/body",
+  "steps": 2,
+  "obey_rate": 0.667,
+  "first_rule_break": {
+   "step": 2,
+   "food": 0,
+   "choice": "UP",
+   "opt": "(6,7) body, NEARER to food, cyc=143"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ }
+]

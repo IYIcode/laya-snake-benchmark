@@ -1,0 +1,4 @@
+cold first call (25s idle): wall=238.3ms (server)
+ramp curve: first5=[67, 36, 27, 28, 31] last5=[30, 27, 25, 32, 27]
+back-to-back x30: p50=29.6ms
+then paced 350ms x15 (P0 hysteresis?): p50=43.4ms max=102.9ms

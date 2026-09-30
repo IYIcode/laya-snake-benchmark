@@ -1,0 +1,64 @@
+# ── 模型权重与训练中间产物（体积大，不入库）──
+_graveyard/
+_rlcd/
+__pycache__/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.onnx
+*.zstd
+_graveyard/**/tokenizer/**
+**/models--*/
+
+# ── 视频/音频的中间产物（可由脚本重新生成）──
+_ppt_video/
+_ppt_video3/
+_ppt_video4/
+_ppt_audio/
+_ppt_audio3/
+_ppt_audio4/
+vibe_images/
+*.mp4
+!laya-ppt-3分钟.mp4
+*.wav
+*.mp3
+
+# ── 开发期临时文件 ──
+_dev/_pkgs/
+_dev/_pylibs/
+_dev/_biliup_src/
+_dev/biliup/
+_dev/.chrome-profile*/
+_dev/frame*.png
+_dev/lane_frames/
+_dev/slide6_frames/
+_dev/lane_preview_*.png
+_dev/slide6_preview_*.png
+_dev/final_check/
+_dev/bili_*.log
+_dev/bili_*.json
+_dev/audio4_durations.json
+_dev/cdp_test.png
+_dev/slide6_board_crop.png
+_dev/chrome_shot.png
+_dev/*.log
+_pkgs/
+_shots/
+_ppt_shots/
+
+# ── 各种运行期日志（含本机路径，且都在 VERIFY.md 里标明"未随仓库打包"）──
+bridge*.log
+static_*.log
+evolve_v2*.log
+rl_gen5*.log
+finetune.log
+v3_grid.log
+_rlcd_run*.log
+_tune_runs/**/*.tmp
+laya_snake_data_peek.json
+laya_snake_v3_grid_peek.json
+
+# ── 系统 ──
+.DS_Store
+Thumbs.db

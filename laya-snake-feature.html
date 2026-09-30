@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>特征贪吃蛇 · 纯代码小程序（不用 Laya 模型）</title>
+<style>
+:root{--bg:#0e1117;--card:#161b24;--line:#2a3242;--tx:#dfe6f0;--dim:#8b96a8;--gr:#3ddc84;--pk:#f472b6;--am:#fbbf24;--rd:#f87171;--bl:#60a5fa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 "Microsoft YaHei",system-ui,sans-serif}
+header{display:flex;align-items:baseline;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:19px}
+header .sub{color:var(--dim);font-size:12.5px}
+header a{color:var(--bl);font-size:12.5px;text-decoration:none}
+.wrap{display:grid;grid-template-columns:500px 1fr 330px;gap:14px;padding:14px 18px;max-width:1440px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+h2{margin:0 0 8px;font-size:14px;color:var(--am)}
+canvas{display:block;border-radius:8px;background:#0a0d13;width:100%}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+button{background:#222b3a;border:1px solid var(--line);color:var(--tx);border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer}
+button:hover{border-color:var(--bl)}
+button.go{background:#14532d;border-color:var(--gr)}
+input[type=number]{width:86px;background:#0a0d13;border:1px solid var(--line);color:var(--tx);border-radius:6px;padding:5px 7px;font-size:13px}
+label.small{color:var(--dim);font-size:12px;display:flex;align-items:center;gap:6px}
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.stat .b{background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:7px 9px;text-align:center}
+.stat .v{font-size:21px;font-weight:700}
+.stat .k{font-size:11px;color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{color:var(--dim);font-weight:400;text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+td{padding:4px 6px;border-bottom:1px solid #1d2430}
+tr.pick td{background:#123524;color:#fff}
+tr.pick td:first-child{border-left:3px solid var(--gr)}
+tr.deny td{color:#6b7688}
+.tag{display:inline-block;border-radius:5px;padding:0 6px;font-size:11px;margin-left:4px}
+.t-near{background:#14532d;color:#86efac}.t-same{background:#3f3f1e;color:#fde68a}.t-far{background:#4c1d24;color:#fca5a5}
+.t-safe{background:#0c4a6e;color:#7dd3fc}.t-risk{background:#7f1d1d;color:#fecaca}
+#log{height:250px;overflow:auto;font:11.5px/1.7 Consolas,monospace;color:var(--dim);background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:8px}
+#log .e{color:var(--gr)}#log .d{color:var(--rd)}
+.note{font-size:12px;color:var(--dim);margin-top:8px}
+.rulebox{font-size:12.5px;color:var(--tx);background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:10px}
+.rulebox b{color:var(--am)}
+.banner{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(10,13,19,.92);border:1px solid var(--line);border-radius:10px;padding:14px 22px;text-align:center;display:none;font-size:15px}
+.banner b{font-size:22px;display:block}
+.bwrap{position:relative}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐍 特征贪吃蛇 · 纯代码小程序</h1>
+  <span class="sub">决策 = 四特征 + 哈密顿环保险，0 行模型调用（断网也能跑，不连 8890 桥接）</span>
+  <a href="laya-snake-pk.html">← 回到 5 方 PK 擂台</a>
+</header>
+
+<div class="wrap">
+  <!-- 左：棋盘 -->
+  <div class="card">
+    <h2>棋盘 12×12（起点 (6,6) 朝右，种子可复现）</h2>
+    <div class="bwrap"><canvas id="cv" width=476 height=476></canvas>
+      <div class="banner" id="banner"></div></div>
+    <div class="ctl">
+      <button id="btnRun" class="go">▶ 开始</button>
+      <button id="btnStep">单步</button>
+      <button id="btnReset">重开</button>
+      <label class="small">种子 <input type="number" id="seed" value="2026"></label>
+      <label class="small">速度 <input type="range" id="speed" min=8 max=600 value=60 style="width:90px"></label>
+    </div>
+  </div>
+
+  <!-- 中：本级决策 -->
+  <div class="card">
+    <h2>本级决策 · 四个方向的特征全量展示</h2>
+    <div class="rulebox">
+      <b>算法（伪代码 6 行）</b><br>
+      ① 去掉落点是 <b>墙/蛇身</b> 的方向；<br>
+      ② 每个候选算 4 个特征：<b>远近</b>（落点到食物的曼哈顿距离比蛇头变近了还是变远）、<b>距离值</b>、<b>空间</b>（洪水填充：走进落点后能游到的空格数，尾巴视作会让位）、<b>可达</b>（BFS：走进落点后食物够不够得到）；<br>
+      ③ 四级候选池，取第一个非空的：<b>安全且可达</b> → 安全（空间≥蛇长×1.2）→ 可达 → 全部合法（保命挣扎）；<br>
+      ④ 排序：变近 &gt; 变远，同级取距离小的，再取空间大的；<br>
+      ⑤ <b style="color:var(--gr)">环保险（困死的根治）</b>：给 144 格预编一条首尾相接的「哈密顿环」，只有<b>环步数</b>不超过「身体和食物之前」的走法才放行——蛇永远沿环追着空隙走，数学上不可能把自己围死；<br>
+      ⑥ 没有候选方向 = 困死（加保险后理论不发生）。
+    </div>
+    <table id="tbl"><thead><tr><th>方向</th><th>落点</th><th>远近</th><th>距离</th><th>空间</th><th>安全</th><th>可达</th><th>环步数</th></tr></thead><tbody></tbody></table>
+    <div id="log"></div>
+  </div>
+
+  <!-- 右：战绩 -->
+  <div class="card">
+    <h2>本局战绩</h2>
+    <div class="stat">
+      <div class="b"><div class="v" id="sScore">0</div><div class="k">食物</div></div>
+      <div class="b"><div class="v" id="sSteps">0</div><div class="k">步数</div></div>
+      <div class="b"><div class="v" id="sLen">3</div><div class="k">长度</div></div>
+      <div class="b"><div class="v" id="sCause">—</div><div class="k" style="font-size:11px">死因</div></div>
+    </div>
+    <h2>累计（本页会话内）</h2>
+    <table id="acc"><thead><tr><th>局</th><th>食物</th><th>步数</th><th>死因</th></tr></thead><tbody></tbody></table>
+    <div class="note" id="avg"></div>
+    <h2 style="margin-top:12px">和 PK 擂台的关系</h2>
+    <div class="note">演进史：<b>三特征版</b>（落点/远近/空间）在 PK 擂台跑出平均 36.5、死因 26/26 全是「困死」——贪心无前瞻，迟早把自己围进死角。加第 4 特征「可达」仍困死（无头实验证实）。最终解 = 第 5 条<b style="color:var(--gr)">环保险</b>：实测 12 个种子 <b>12/12 全部「棋盘装满 · 通关」，每局 141 食物＝12×12 理论上限</b>，困死归零。四特征仍决定走哪条捷径（保送命的前提下尽量抄近路），环保险只在「这步会破坏安全序」时一票否决。</div>
+  </div>
+</div>
+
+<script>
+const GW=12,GH=12;
+const DIRS={UP:[0,-1],DOWN:[0,1],LEFT:[-1,0],RIGHT:[1,0]}, KN=['UP','DOWN','LEFT','RIGHT'];
+const CN={UP:'上',DOWN:'下',LEFT:'左',RIGHT:'右'};
+
+// ── 与 laya-snake-pk.html / _rlcd_snake.py 完全一致的环境与算法 ──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function stepSnake(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return[snake,true,false];
+  if(body.some(s=>s[0]===nx&&s[1]===ny))return[snake,true,false];
+  const ns=[[nx,ny],...snake];if(!eat)ns.pop();return[ns,false,eat];}
+function landOf(nx,ny,snake,food){
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return'wall';
+  const tail=snake[snake.length-1];
+  const inBody=snake.slice(1,-1).some(s=>s[0]===nx&&s[1]===ny);
+  const isTail=snake.length>1&&nx===tail[0]&&ny===tail[1];
+  const eat=nx===food[0]&&ny===food[1];
+  if(inBody)return'body';
+  if(isTail)return eat?'body':'vacating';
+  return'free';}
+function floodSpace(head,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  const seen=new Set([head[0]+','+head[1]]);const st=[head];let n=0;
+  while(st.length){const[x,y]=st.pop();n++;
+    for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+      if(p[0]>=0&&p[0]<GW&&p[1]>=0&&p[1]<GH&&!b.has(key)&&!seen.has(key)){seen.add(key);st.push(p);}}}
+  return n;}
+function bfsDist(head,food,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  if(head[0]===food[0]&&head[1]===food[1])return 0;
+  let q=[[head,0]];const seen=new Set([head[0]+','+head[1]]);
+  while(q.length){const nq=[];for(const[[x,y],d]of q){for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];
+    const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+    if(p[0]<0||p[0]>=GW||p[1]<0||p[1]>=GH||b.has(key)||seen.has(key))continue;
+    if(p[0]===food[0]&&p[1]===food[1])return d+1;
+    seen.add(key);nq.push([p,d+1]);}}q=nq;}
+  return null;}
+// ── 第⑥条：哈密顿环保险 ── 12×12 梳形环：每格一个环序号，蛇永远只在「环上身体之前」前进 ⇒ 数学上不可能被围死
+function cidx(x,y){if(y===0)return x===0?0:133+(11-x);
+  const start=1+11*x;return (x%2===0)?start+(y-1):start+(11-y);}
+// 本级四方向特征 + 环保险过滤
+function analyze(snake,food){
+  const[hx,hy]=snake[0],hi=cidx(hx,hy);
+  const Dc=(x,y)=>{let d=cidx(x,y)-hi;return(d%144+144)%144;};
+  const df=Dc(food[0],food[1]);
+  // m1 = 身体(含尾)最近环距离；m2 = 不含尾（尾巴下一步会让位，不阻挡环前进）
+  let m1=144,m2=144;
+  for(let i=1;i<snake.length;i++){const dd=Dc(snake[i][0],snake[i][1]);
+    if(i<snake.length-1&&dd<m2)m2=dd; if(dd<m1)m1=dd;}
+  const rows=[];
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    if(land==='wall'||land==='body'){rows.push({d,nx,ny,land,legal:false});continue;}
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?0:(dn>dc?2:1);
+    const ns=[[nx,ny],...snake];const eat=nx===food[0]&&ny===food[1];if(!eat)ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));
+    const reach=eat||bfsDist(ns[0],food,ns.slice(1))!==null;
+    const cd=Dc(nx,ny);
+    // 吃食=尾巴不让位，禁越界要用含尾的 m1；不吃=尾巴会走开，用 m2
+    const allow=eat?(df<=m1-1):(cd>=1&&cd<=Math.min(m2-1,df));
+    rows.push({d,nx,ny,land,legal:true,rel,dn,sp,ok:sp>=ns.length*1.2,reach,cd,allow});}
+  const legal=rows.filter(r=>r.legal);
+  const safe=legal.filter(r=>r.allow);
+  const base=safe.length?safe:legal;   // 环上无路可走=理论不可能，兜底保命
+  const tiers=[base.filter(r=>r.ok&&r.reach),base.filter(r=>r.ok),base.filter(r=>r.reach),base];
+  const pool=(tiers.find(t=>t.length)||[]).slice().sort((a,b)=>a.rel-b.rel||a.dn-b.dn||b.sp-a.sp);
+  return{rows,pick:pool.length?pool[0].d:null};}
+
+// ── 游戏状态 ──
+let snake,food,rng,steps,score,lenMax,alive,cause,mvNo,gameNo,history=[];
+let running=false,avgRows=[];
+const cv=document.getElementById('cv'),cx=cv.getContext('2d'),CELL=cv.width/GW;
+
+function placeFood(){const occ=new Set(snake.map(s=>s[0]+','+s[1]));
+  const free=[];for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const k=x+','+y;if(!occ.has(k))free.push([x,y]);}
+  if(!free.length){food=null;return;}
+  food=free[Math.floor(rng()*free.length)];}
+function reset(){const sd=+document.getElementById('seed').value||1;rng=mulberry32(sd);
+  snake=[[6,6],[5,6],[4,6]];steps=0;score=0;lenMax=3;alive=true;cause='—';mvNo=null;
+  history=[{d:'START',rows:[],pick:null}];placeFood();hideBanner();draw();renderDecision();ui();logLine('第 '+(gameNo+1)+' 局开始 · 种子 '+sd,'e');}
+function snap(){return{snake:snake.map(s=>s.slice()),food:food?food.slice():null,steps,score,lenMax,alive,cause,mvNo};}
+function restore(h){snake=h.snake.map(s=>s.slice());food=h.food;steps=h.steps;score=h.score;
+  lenMax=h.lenMax;alive=h.alive;cause=h.cause;mvNo=h.mvNo;draw();renderDecision();ui();}
+
+function step(){if(!alive)return;
+  if(!food){die('棋盘装满 · 通关');return;}
+  const a=analyze(snake,food);
+  history.push({d:a.pick,rows:a.rows,pick:a.pick,snapObj:snap()});
+  mvNo=a.pick;
+  if(a.pick===null){logLine('第'+steps+'步 无安全方向 → 困死','d');die('困死');return;}
+  const[ns,died,ate]=stepSnake(snake,food,a.pick);steps++;
+  if(died){logLine('第'+steps+'步 '+CN[a.pick]+' → 死亡','d');
+    const[nx2,ny2]=[snake[0][0]+DIRS[a.pick][0],snake[0][1]+DIRS[a.pick][1]];
+    die((nx2<0||nx2>=GW||ny2<0||ny2>=GH)?'撞墙':'撞身');return;}
+  snake=ns;lenMax=Math.max(lenMax,snake.length);
+  if(ate){score++;logLine('第'+steps+'步 '+CN[mvNo]+' → 🍎 吃到，共 '+score,'e');placeFood();
+    if(!food){die('棋盘装满 · 通关');return;}}
+  draw();renderDecision();ui();}
+function die(c){alive=false;cause=c;running=false;setRunBtn();
+  gameNo=(gameNo||0)+1;avgRows.push({g:gameNo,score,steps,cause:c});renderAcc();
+  showBanner(c,score);draw();ui();logLine('☠ '+c+' · 食物 '+score+' · 步数 '+steps,'d');}
+
+// ── 绘制 ──
+function draw(){cx.fillStyle='#0a0d13';cx.fillRect(0,0,cv.width,cv.height);
+  cx.strokeStyle='#1c2330';cx.lineWidth=1;
+  for(let i=1;i<GW;i++){cx.beginPath();cx.moveTo(i*CELL,0);cx.lineTo(i*CELL,cv.height);cx.stroke();
+    cx.beginPath();cx.moveTo(0,i*CELL);cx.lineTo(cv.width,i*CELL);cx.stroke();}
+  if(food){cx.fillStyle='#f87171';cx.beginPath();cx.arc(food[0]*CELL+CELL/2,food[1]*CELL+CELL/2,CELL*0.33,0,7);cx.fill();
+    cx.fillStyle='#fff';cx.font='11px sans-serif';cx.fillText('3',food[0]*CELL+4,food[1]*CELL+12);}
+  snake.forEach((s,i)=>{cx.fillStyle=i===0?'#3ddc84':'#1f8a53';
+    cx.fillRect(s[0]*CELL+2,s[1]*CELL+2,CELL-4,CELL-4);
+    if(i===0){cx.fillStyle='#062c18';cx.font='bold 16px sans-serif';cx.textAlign='center';
+      cx.fillText('2',s[0]*CELL+CELL/2,s[1]*CELL+CELL/2+6);
+      if(mvNo){const[dx,dy]=DIRS[mvNo];cx.strokeStyle='#fbbf24';cx.lineWidth=3;cx.beginPath();
+        cx.moveTo(s[0]*CELL+CELL/2,s[1]*CELL+CELL/2);
+        cx.lineTo(s[0]*CELL+CELL/2+dx*CELL*0.45,s[1]*CELL+CELL/2+dy*CELL*0.45);cx.stroke();}
+      cx.textAlign='left';}});
+  if(!alive&&food){cx.globalAlpha=.4;cx.fillStyle='#f87171';cx.beginPath();cx.arc(food[0]*CELL+CELL/2,food[1]*CELL+CELL/2,CELL*0.33,0,7);cx.fill();cx.globalAlpha=1;}}
+
+// ── 决策表：把 analyze 的排好序结果全量渲染 ──
+function renderDecision(){const tb=document.querySelector('#tbl tbody');tb.innerHTML='';
+  const h=history[history.length-1];if(!h||!h.rows.length)return;
+  const legal=h.rows.filter(r=>r.legal);
+  const safe=legal.filter(r=>r.allow);
+  const base=safe.length?safe:legal;
+  const tiers=[base.filter(r=>r.ok&&r.reach),base.filter(r=>r.ok),base.filter(r=>r.reach),base];
+  const pool=(tiers.find(t=>t.length)||[]).slice().sort((a,b)=>a.rel-b.rel||a.dn-b.dn||b.sp-a.sp);
+  const order=[...pool,...legal.filter(r=>!pool.includes(r)),...h.rows.filter(r=>!r.legal)];
+  const REL=['变近','不变','变远'],RC=['t-near','t-same','t-far'];
+  order.forEach(r=>{const tr=document.createElement('tr');
+    if(r.legal&&r.d===h.pick)tr.className='pick';
+    if(!r.legal)tr.className='deny';
+    if(!r.legal){tr.innerHTML='<td>'+CN[r.d]+' ('+r.d+')</td><td>('+r.nx+','+r.ny+')</td><td colspan=6>'+(r.land==='wall'?'✕ 墙':'✕ 蛇身')+' · 直接排除</td>';}
+    else{tr.innerHTML='<td>'+(r.d===h.pick?'▶ ':'')+CN[r.d]+'</td><td>('+r.nx+','+r.ny+')</td>'+
+      '<td><span class="tag '+RC[r.rel]+'">'+REL[r.rel]+'</span></td><td>'+r.dn+'</td><td>'+r.sp+'</td>'+
+      '<td>'+(r.ok?'<span class="tag t-safe">安全</span>':'<span class="tag t-risk">危险池</span>')+'</td>'+
+      '<td>'+(r.reach?'✓':'✕ 够不到')+'</td>'+
+      '<td>'+(r.allow?'✓ 第'+r.cd+'环步':'<span class="tag t-risk">✗ 第'+r.cd+'环步·越界</span>')+'</td>';}
+    tb.appendChild(tr);});}
+
+function ui(){document.getElementById('sScore').textContent=score;
+  document.getElementById('sSteps').textContent=steps;
+  document.getElementById('sLen').textContent=snake.length;
+  document.getElementById('sCause').textContent=cause;}
+function renderAcc(){const tb=document.querySelector('#acc tbody');tb.innerHTML='';
+  avgRows.forEach(r=>{tb.innerHTML+='<tr><td>'+r.g+'</td><td>'+r.score+'</td><td>'+r.steps+'</td><td>'+r.cause+'</td></tr>';});
+  const n=avgRows.length,m=Math.round(avgRows.reduce((a,r)=>a+r.score,0)/n*10)/10;
+  document.getElementById('avg').textContent=n?('共 '+n+' 局 · 平均 '+m+' 食物/局'):'';}
+function logLine(t,c){const el=document.getElementById('log'),d=document.createElement('div');
+  if(c)d.className=c;d.textContent=t;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function showBanner(t,s){const b=document.getElementById('banner');
+  b.innerHTML='<b>'+t+'</b>食物 '+s+' · 步数 '+steps+' · 最长 '+lenMax+'<br><span style="font-size:12px;color:#8b96a8">点「重开」再来一局</span>';b.style.display='block';}
+function hideBanner(){document.getElementById('banner').style.display='none';}
+function setRunBtn(){const b=document.getElementById('btnRun');b.textContent=running?'⏸ 暂停':'▶ 开始';b.className=running?'':'go';}
+function toggle(){if(!alive){reset();running=true;setRunBtn();return;}
+  running=!running;setRunBtn();}
+// Worker 心跳：切后台标签页也不被浏览器节流（PK 页同款教训）
+const beat=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(1),60);'],{type:'text/javascript'})));
+let acc=0,last=0;
+beat.onmessage=()=>{if(!running)return;const now=performance.now();
+  const sp=+document.getElementById('speed').value;if(now-last<sp)return;last=now;step();};
+
+document.getElementById('btnRun').onclick=toggle;
+document.getElementById('btnStep').onclick=()=>{running=false;setRunBtn();step();};
+document.getElementById('btnReset').onclick=()=>{running=false;reset();setRunBtn();};
+document.getElementById('seed').onchange=()=>{running=false;reset();setRunBtn();};
+gameNo=0;reset();setRunBtn();
+
+// 供无头验证：同步跑 n 步
+window.__run=function(n){for(let i=0;i<n&&alive;i++)step();return{score,steps,alive,cause,len:snake.length};};
+window.__stats=function(){return{score,steps,alive,cause,len:snake.length,food:food}};
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+[
+ {
+  "seed": 1000,
+  "arm": "timer",
+  "food": 43,
+  "cause": "wall/body",
+  "steps": 1657,
+  "obey_rate": 0.993,
+  "first_rule_break": {
+   "step": 1188,
+   "food": 37,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  },
+  "rescue_activations": 1,
+  "rescue_steps": 38,
+  "auto_rate": 0.977
+ },
+ {
+  "seed": 1001,
+  "arm": "timer",
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 5535,
+  "obey_rate": 0.996,
+  "first_rule_break": {
+   "step": 514,
+   "food": 19,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  },
+  "rescue_activations": 2,
+  "rescue_steps": 35,
+  "auto_rate": 0.994
+ },
+ {
+  "seed": 1002,
+  "arm": "timer",
+  "food": 90,
+  "cause": "wall/body",
+  "steps": 3463,
+  "obey_rate": 0.992,
+  "first_rule_break": {
+   "step": 756,
+   "food": 29,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  },
+  "rescue_activations": 1,
+  "rescue_steps": 25,
+  "auto_rate": 0.993
+ }
+]

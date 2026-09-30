@@ -1,0 +1,48 @@
+[
+ {
+  "seed": 1000,
+  "arm": "hintJS",
+  "food": 55,
+  "cause": "wall/body",
+  "steps": 1901,
+  "obey_rate": 0.997,
+  "first_rule_break": {
+   "step": 1880,
+   "food": 55,
+   "choice": "DOWN",
+   "opt": "(4,1) free, NEARER to food, cyc=49"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1001,
+  "arm": "hintJS",
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 4698,
+  "obey_rate": 1.0,
+  "first_rule_break": {
+   "step": 608,
+   "food": 19,
+   "choice": "UP",
+   "opt": "(7,0) vacating, FARTHER from food, cyc=49"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1002,
+  "arm": "hintJS",
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 4538,
+  "obey_rate": 1.0,
+  "first_rule_break": null,
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ }
+]

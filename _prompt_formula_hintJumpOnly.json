@@ -1,0 +1,19 @@
+[
+ {
+  "seed": 166426,
+  "arm": "hintJumpOnly",
+  "food": 21,
+  "cause": "wall/body",
+  "steps": 534,
+  "obey_rate": 0.994,
+  "first_rule_break": {
+   "step": 528,
+   "food": 21,
+   "choice": "DOWN",
+   "opt": "(4,1) free, NEARER to food, cyc=49"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ }
+]

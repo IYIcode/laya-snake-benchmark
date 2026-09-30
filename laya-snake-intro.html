@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>贪吃蛇 · 策略输入介绍页</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#08080f;color:#cdd;font:14px/1.6 "Microsoft YaHei",Consolas,monospace}
+  a{color:#4dd2ff}
+  h1{font-size:20px;margin:0}
+  header{padding:14px 20px;border-bottom:1px solid #1c1c33;background:linear-gradient(90deg,#0d1226,#08080f)}
+  header .sub{color:#778;font-size:12px;margin-top:3px}
+  .btns{margin-top:8px}
+  .btns a{display:inline-block;text-decoration:none;background:#2f6df6;color:#fff;padding:5px 12px;border-radius:6px;font-size:13px;margin-right:8px}
+  .btns a.ghost{background:#161628;border:1px solid #334;color:#bcd}
+  h2{font-size:15px;color:#eef;margin:18px 20px 6px;padding-left:9px;border-left:3px solid #2f6df6}
+  .grid{display:grid;gap:10px;padding:0 20px}
+  .cards5{grid-template-columns:repeat(5,1fr)}
+  .card{background:#0d0d1c;border:1px solid #1e1e38;border-radius:8px;padding:10px}
+  .card h3{margin:0 0 2px;font-size:13px;color:#fff}
+  .tag{font-size:10px;color:#89a;margin-bottom:6px}
+  .card .lab{font-size:11px;color:#678;margin-top:6px}
+  .card .mono{font-size:11px;color:#9fd;background:#080814;border-radius:4px;padding:5px 6px;white-space:pre-wrap;word-break:break-all;max-height:150px;overflow:auto}
+  .yes{color:#3f6} .no{color:#f77}
+  .exp{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:0 20px}
+  canvas{background:#0d0d20;border-radius:6px;display:block}
+  .pickbar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .pickbar button{background:#141428;border:1px solid #334;color:#bcd;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+  .pickbar button.on{background:#2f6df6;border-color:#2f6df6;color:#fff}
+  .row{display:grid;grid-template-columns:70px 1fr 52px;align-items:center;gap:8px;margin:5px 0;font-size:12px}
+  .bar{height:20px;background:#0b0b18;border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#1f8fb8,#4dd2ff);transition:width .35s}
+  .cn{color:#8ab}
+  .conf{margin-top:8px;font-size:12px;color:#9ab}
+  .conf b{color:#fff}
+  .gate{font-size:11px;margin-top:3px}
+  .evid{padding:0 20px;font-size:12.5px;color:#9ab}
+  .evid li{margin:3px 0}
+  .evid b{color:#cde}
+  .foot{margin:14px 20px;font-size:11px;color:#556;border-top:1px solid #1c1c33;padding-top:10px}
+  code{background:#0a0a18;padding:1px 5px;border-radius:3px;color:#7fc}
+</style></head><body>
+<header>
+  <h1>贪吃蛇决策 · 五套策略输入对照</h1>
+  <div class="sub">模型 = Laya 421M ModernBERT（System-1 四选一决策头）。本页解释"每套方案喂什么进去、输出什么、有没有训练"，并用一块固定棋盘实时对比概率。</div>
+  <div class="btns"><a href="laya-snake-pk.html">▶ 打开同屏 PK 录屏页</a>
+    <a class="ghost" href="laya-snake-raw.html">裸棋盘单页</a>
+    <a class="ghost" href="laya-snake-contract.html">契约单页</a></div>
+</header>
+
+<h2>一、五种方案 · 输入 / 输出 / 训练</h2>
+<div class="grid cards5" id="cards"></div>
+
+<h2>二、同一块棋盘，实时看概率分布怎么变</h2>
+<div class="exp">
+  <div><canvas id="cv" width="192" height="192"></canvas>
+    <div style="font-size:11px;color:#667;margin-top:4px">头(6,6)朝右 · 身(5,6)(4,6) · 食物(9,5)<br>正确答案：UP（往上更接近食物）</div>
+  </div>
+  <div>
+    <div class="pickbar" id="pick"></div>
+    <div id="bars"></div>
+    <div class="conf">选择 <b id="ch">—</b>　置信度 <b id="cf">—</b>　耗时 <b id="ms">—</b>ms</div>
+    <div class="gate" id="gate"></div>
+    <div style="font-size:11px;color:#556;margin-top:8px">概率条＝模型对该方向的真实输出概率（点按钮实时向 8890 桥接发请求）。置信度 &lt;0.6 时 Jev/Laya 的门控会拒绝这个决策。</div>
+  </div>
+</div>
+
+<h2>三、为什么"直接喂棋盘"不行，非要特征</h2>
+<ul class="evid">
+  <li><b>① 换序实验：</b>四个选项文字完全相同，只调换排列、甚至把整块棋盘删掉，模型仍选 UP，概率恒定 ≈0.34/0.23/0.19/0.19 → 是 <code>"UP" 这个词的语料先验</code>在做决定，不是棋盘。</li>
+  <li><b>② 挪食物实验：</b>把食物从棋盘一角搬到另一角，各方向概率最大变化 <b>≤0.008</b> → 12×12 数字矩阵基本是"废 token"。</li>
+  <li><b>③ 加标记实验：</b>给某一格加 <code>@@ 去食物那 @@</code>，模型选的却是<b>没被标记</b>的格 → 选项文字和落点之间<b>没有绑定</b>。</li>
+  <li><b>④ 极性实验：</b>"食物就在这里"和"墙就在这里"给同一格带来的提升都是 +0.03~0.05 → 它只能识别"这段文字很显眼(salience)"，<b>读不出"该追"还是"该躲"</b>。</li>
+  <li style="color:#eab">→ 结论：底模没有"数字矩阵→空间"的解码能力，这是要靠<b>训练</b>换的能力（本页第二节实测：同一棋盘，微调后概率从均匀变到 UP=0.63、置信度 0.01→0.36）。特征 = 把感知预先做掉，所以"契约选项"喂给模型的是算好的坐标事实，而不是让它自己啃 144 个格子。</li>
+</ul>
+
+<div class="foot">数据全部来自本机真实 Laya 推理（RTX 4060 Ti，8890 桥接，laya=原生 / rlcd=RLCD微调）。录屏建议：先讲本页第一、三节，再切到同屏 PK 页跑几局看最终得分榜。</div>
+
+<script>
+const BRIDGE='http://127.0.0.1:8890';
+const RAW_RULES="You are driving a snake in a 12x12 grid game. The board is given as 12 rows of 12 characters: '0' empty cell, '1' snake body, '2' snake head, '3' food. Row 0 is the top wall, row 11 the bottom wall; column 0 the left wall, column 11 the right wall; rows are listed top to bottom. UP moves the head to row-1, DOWN to row+1, LEFT to col-1, RIGHT to col+1. Choose the direction that leads the head toward the food while staying alive: never step into a wall or into a '1' body cell.";
+const RAW_OPTS={UP:'move one cell up (row-1)',DOWN:'move one cell down (row+1)',LEFT:'move one cell left (col-1)',RIGHT:'move one cell right (col+1)'};
+const SHORT="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. Pick the direction that moves the head toward the food without dying.";
+// 固定演示棋盘：头(6,6)朝右 身(5,6)(4,6) 食物(9,5)
+const GRID=(()=>{const g=Array.from({length:12},()=>Array(12).fill('0'));
+  [[4,6,'1'],[5,6,'1'],[6,6,'2'],[9,5,'3']].forEach(([x,y,c])=>g[y][x]=c);return g.map(r=>r.join(''));})();
+const FACT_OPTS={UP:'(6,5) free, NEARER to food',DOWN:'(6,7) free, FARTHER from food',LEFT:'(5,6) body, FARTHER from food',RIGHT:'(7,6) free, NEARER to food'};
+const CN={UP:'上 UP',DOWN:'下 DOWN',LEFT:'左 LEFT',RIGHT:'右 RIGHT'};
+
+const SCHEMES=[
+ {key:'rule3',name:'三特征规则智能体',tag:'特征 · 纯代码',train:'<span class="no">不训练</span>（手写 if 排序）',
+  inTxt:'每步只算 3 个数字：\n① 落点性质\n   wall/body/vacating/free\n② 距食物 变近/变远/不变\n③ 洪水填充可达空间\n\n按「不死>变近>空间大」排序',
+  out:'四选一方向'},
+ {key:'bfs',name:'BFS 老师（搜索）',tag:'算法 · 纯代码',train:'<span class="no">不训练</span>（也是①⑤的训练标签来源）',
+  inTxt:'整块 12×12 棋盘。\n自己对每个方向做全图 BFS\n最短路 + 洪水空间 +\n死角重罚打分取最高。',
+  out:'四选一（分数最高）'},
+ {key:'zs_raw',name:'零样本 · 裸棋盘',tag:'模型 · 未训练',train:'<span class="no">未训练</span>（原生 Laya 权重）',
+  inTxt:'长英文规则（含 0/1/2/3 图例）\n+ 12 行数字矩阵\n+ 4 个静态选项：\n  "move one cell up (row-1)"...',
+  out:'四选一 + 概率',model:'laya',mode:'raw'},
+ {key:'zs_con',name:'零样本 · 契约选项',tag:'模型 · 未训练',train:'<span class="no">未训练</span>（原生 Laya 权重）',
+  inTxt:'短英文规则\n+ 同样的数字矩阵\n+ 4 个「每步现算的坐标事实」选项：\n  "(6,5) free, NEARER to food"\n  "(5,6) body, FARTHER from food"',
+  out:'四选一 + 概率',model:'laya',mode:'contract'},
+ {key:'rlcd',name:'RLCD 微调 · 契约选项',tag:'模型 · 微调',train:'<span class="yes">RLCD 微调</span>：26k 老师软标签 / 4 轮 / 温度校准',
+  inTxt:'与「零样本·契约」<b style="color:#7fc">逐字相同</b>\n的输入，只是权重被训练过。',
+  out:'四选一 + 概率',model:'rlcd',mode:'contract'},
+];
+
+// 渲染方案卡
+document.getElementById('cards').innerHTML=SCHEMES.map(s=>`<div class="card">
+  <h3>${s.name}</h3><div class="tag">${s.tag}　·　${s.train}</div>
+  <div class="lab">输入给决策者的原文</div><div class="mono">${s.inTxt}</div>
+  <div class="lab">输出</div><div style="font-size:12px;color:#abd">${s.out}</div>
+</div>`).join('');
+
+// 画棋盘
+(function(){const c=document.getElementById('cv'),g=c.getContext('2d'),N=16;
+  g.fillStyle='#0d0d20';g.fillRect(0,0,192,192);g.strokeStyle='#1a1a30';
+  for(let i=0;i<=12;i++){g.beginPath();g.moveTo(i*N+.5,0);g.lineTo(i*N+.5,192);g.stroke();g.beginPath();g.moveTo(0,i*N+.5);g.lineTo(192,i*N+.5);g.stroke();}
+  GRID.forEach((row,y)=>{[...row].forEach((ch,x)=>{if(ch==='1'){g.fillStyle='#1f8fb8';g.fillRect(x*N+1,y*N+1,N-2,N-2);}
+    else if(ch==='2'){g.fillStyle='#4dd2ff';g.fillRect(x*N+1,y*N+1,N-2,N-2);}
+    else if(ch==='3'){g.fillStyle='#e33';g.fillRect(x*N+3,y*N+3,N-6,N-6);}});});})();
+
+// 实时对照面板
+const panel={raw:{label:'零样本·裸棋盘',model:'laya',instr:RAW_RULES,crit:RAW_OPTS},
+             contract0:{label:'零样本·契约',model:'laya',instr:SHORT,crit:FACT_OPTS},
+             rlcd:{label:'RLCD 微调',model:'rlcd',instr:SHORT,crit:FACT_OPTS}};
+const pick=document.getElementById('pick');
+Object.entries(panel).forEach(([k,p],i)=>{const b=document.createElement('button');b.textContent=p.label;b.dataset.k=k;
+  b.onclick=()=>{[...pick.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');run(k);};pick.appendChild(b);});
+function bars(p){document.getElementById('bars').innerHTML=['UP','DOWN','LEFT','RIGHT'].map(d=>
+  `<div class="row"><span class="cn">${CN[d]}</span><div class="bar"><i style="width:${((p[d]||0)*100).toFixed(0)}%"></i></div><span>${((p[d]||0)*100).toFixed(0)}%</span></div>`).join('');}
+async function run(k){
+  const p=panel[k];
+  const st={game:'snake',board:'12x12',grid:GRID};
+  try{
+    document.getElementById('bars').innerHTML='<div style="color:#667">推理中…</div>';
+    const j=await fetch(BRIDGE+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:p.model,state:st,instructions:p.instr,criteria:p.crit})}).then(r=>r.json());
+    const pr=j.probabilities||{};bars(pr);
+    document.getElementById('ch').textContent=CN[j.choice]||j.choice;
+    document.getElementById('cf').textContent=(j.confidence||0).toFixed(3);
+    document.getElementById('ms').textContent=(j.ms||0).toFixed(0);
+    const ok=j.choice==='UP';
+    const gate=(j.confidence||0)<0.6;
+    document.getElementById('gate').innerHTML=`选${ok?'<span class="yes">对 ✓</span>':'<span class="no">错 ✗（正确是 UP）</span>'}　`+
+      (gate?'<span class="no">置信度 &lt;0.6 → 门控会丢弃此决策</span>':'<span class="yes">置信度达标</span>');
+  }catch(e){document.getElementById('bars').innerHTML='<div style="color:#f77">桥接离线：先运行 python laya_bridge.py --model laya=convaiinnovations/laya --model rlcd=_rlcd/run1/final</div>';}
+}
+(async()=>{ [...pick.children][0].classList.add('on'); run('raw'); })();
+</script></body></html>

@@ -1,0 +1,128 @@
+== step 606 dir=DOWN head=(10,9) len=28 food=(4,4) | foodAhead=73 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (10,8) free, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (10,10) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   LEFT  (9,9) body, NEARER to food, cyc=127 | 不等式:FAIL(=跨身)
+   RIGHT (11,9) free, FARTHER from food, cyc=5 | 不等式:PASS
+== step 607 dir=DOWN head=(10,10) len=28 food=(4,4) | foodAhead=72 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (10,9) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (10,11) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   LEFT  (9,10) body, NEARER to food, cyc=125 | 不等式:FAIL(=跨身)
+   RIGHT (11,10) free, FARTHER from food, cyc=3 | 不等式:PASS
+== step 608 dir=RIGHT head=(10,11) len=28 food=(4,4) | foodAhead=71 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (10,10) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (10,12) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   LEFT  (9,11) body, NEARER to food, cyc=123 | 不等式:FAIL(=跨身)
+   RIGHT (11,11) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+== step 609 dir=UP head=(11,11) len=28 food=(4,4) | foodAhead=70 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (11,10) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,12) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   LEFT  (10,11) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   RIGHT (12,11) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 610 dir=UP head=(11,10) len=28 food=(4,4) | foodAhead=69 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (11,9) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,11) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,10) body, NEARER to food, cyc=141 | 不等式:FAIL(=跨身)
+   RIGHT (12,10) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 611 dir=UP head=(11,9) len=28 food=(4,4) | foodAhead=68 bodyAhead=17 bodyGoAhead=18 jumps=0
+   UP    (11,8) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,10) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,9) body, NEARER to food, cyc=139 | 不等式:FAIL(=跨身)
+   RIGHT (12,9) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 612 dir=UP head=(11,8) len=28 food=(4,4) | foodAhead=67 bodyAhead=17 bodyGoAhead=42 jumps=0
+   UP    (11,7) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,9) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,8) free, NEARER to food, cyc=137 | 不等式:FAIL(=跨身)
+   RIGHT (12,8) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 613 dir=UP head=(11,7) len=28 food=(4,4) | foodAhead=66 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,6) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,8) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,7) free, NEARER to food, cyc=135 | 不等式:FAIL(=跨身)
+   RIGHT (12,7) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 614 dir=UP head=(11,6) len=28 food=(4,4) | foodAhead=65 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,5) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,7) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,6) free, NEARER to food, cyc=133 | 不等式:FAIL(=跨身)
+   RIGHT (12,6) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 615 dir=UP head=(11,5) len=28 food=(4,4) | foodAhead=64 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,4) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,6) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,5) free, NEARER to food, cyc=131 | 不等式:FAIL(=跨身)
+   RIGHT (12,5) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 616 dir=UP head=(11,4) len=28 food=(4,4) | foodAhead=63 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,3) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,5) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,4) free, NEARER to food, cyc=129 | 不等式:FAIL(=跨身)
+   RIGHT (12,4) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 617 dir=UP head=(11,3) len=28 food=(4,4) | foodAhead=62 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,2) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,4) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,3) free, NEARER to food, cyc=127 | 不等式:FAIL(=跨身)
+   RIGHT (12,3) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 618 dir=UP head=(11,2) len=28 food=(4,4) | foodAhead=61 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,1) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,3) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,2) free, NEARER to food, cyc=125 | 不等式:FAIL(=跨身)
+   RIGHT (12,2) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 619 dir=UP head=(11,1) len=28 food=(4,4) | foodAhead=60 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,0) free, FARTHER from food, cyc=1 | 不等式:PASS<= 我选
+   DOWN  (11,2) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,1) free, NEARER to food, cyc=123 | 不等式:FAIL(=跨身)
+   RIGHT (12,1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 620 dir=LEFT head=(11,0) len=28 food=(4,4) | foodAhead=59 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (11,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (11,1) body, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   LEFT  (10,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (12,0) wall, FARTHER from food | 不等式:FAIL(=跨身)
+== step 621 dir=LEFT head=(10,0) len=28 food=(4,4) | foodAhead=58 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (10,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (10,1) free, NEARER to food, cyc=121 | 不等式:FAIL(=跨身)
+   LEFT  (9,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (11,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 622 dir=LEFT head=(9,0) len=28 food=(4,4) | foodAhead=57 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (9,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (9,1) free, NEARER to food, cyc=119 | 不等式:FAIL(=跨身)
+   LEFT  (8,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (10,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 623 dir=LEFT head=(8,0) len=28 food=(4,4) | foodAhead=56 bodyAhead=41 bodyGoAhead=42 jumps=0
+   UP    (8,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (8,1) free, NEARER to food, cyc=97 | 不等式:FAIL(=跨身)
+   LEFT  (7,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (9,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 624 dir=LEFT head=(7,0) len=28 food=(4,4) | foodAhead=55 bodyAhead=41 bodyGoAhead=62 jumps=0
+   UP    (7,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (7,1) free, NEARER to food, cyc=95 | 不等式:FAIL(=跨身)
+   LEFT  (6,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (8,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 625 dir=LEFT head=(6,0) len=28 food=(4,4) | foodAhead=54 bodyAhead=61 bodyGoAhead=62 jumps=0
+   UP    (6,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (6,1) free, NEARER to food, cyc=73 | 不等式:FAIL(=跨身)
+   LEFT  (5,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (7,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 626 dir=LEFT head=(5,0) len=28 food=(4,4) | foodAhead=53 bodyAhead=61 bodyGoAhead=82 jumps=0
+   UP    (5,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (5,1) free, NEARER to food, cyc=71 | 不等式:FAIL(=跨身)
+   LEFT  (4,0) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   RIGHT (6,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 627 dir=DOWN head=(4,0) len=28 food=(4,4) | foodAhead=52 bodyAhead=81 bodyGoAhead=82 jumps=0
+   UP    (4,-1) wall, FARTHER from food | 不等式:FAIL(=跨身)
+   DOWN  (4,1) free, NEARER to food, cyc=49 | 不等式:PASS<= 我选
+   LEFT  (3,0) free, FARTHER from food, cyc=1 | 不等式:PASS
+   RIGHT (5,0) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+== step 628 dir=DOWN head=(4,1) len=28 food=(4,4) | foodAhead=3 bodyAhead=33 bodyGoAhead=54 jumps=0
+   UP    (4,0) body, FARTHER from food, cyc=95 | 不等式:FAIL(=跨身)
+   DOWN  (4,2) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   LEFT  (3,1) free, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   RIGHT (5,1) free, FARTHER from food, cyc=21 | 不等式:FAIL(=跨身)
+== step 629 dir=DOWN head=(4,2) len=28 food=(4,4) | foodAhead=2 bodyAhead=53 bodyGoAhead=54 jumps=0
+   UP    (4,1) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (4,3) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   LEFT  (3,2) free, FARTHER from food, cyc=141 | 不等式:FAIL(=跨身)
+   RIGHT (5,2) free, FARTHER from food, cyc=19 | 不等式:FAIL(=跨身)
+== step 630 dir=DOWN head=(4,3) len=28 food=(4,4) | foodAhead=1 bodyAhead=53 bodyGoAhead=54 jumps=0
+   UP    (4,2) body, FARTHER from food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (4,4) free, NEARER to food, cyc=1 | 不等式:PASS<= 我选
+   LEFT  (3,3) free, FARTHER from food, cyc=139 | 不等式:FAIL(=跨身)
+   RIGHT (5,3) free, FARTHER from food, cyc=17 | 不等式:FAIL(=跨身)
+   >>> 本链终点：此手吃子，新食物 [0, 6]
+CHAIN 25 DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN EATEN
+-- 计划尾部状态: steps=630 score=25 jumps=0 (未含本局早前账)

@@ -1,0 +1,3007 @@
+[
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    4
+   ],
+   "body": [
+    [
+     5,
+     4
+    ],
+    [
+     4,
+     4
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=10 space=0 danger=0",
+   "UP": "foodDist=8 space=0 danger=0",
+   "RIGHT": "foodDist=8 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    3
+   ],
+   "body": [
+    [
+     5,
+     3
+    ],
+    [
+     4,
+     4
+    ]
+   ],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=9 space=0 danger=0",
+   "UP": "foodDist=7 space=0 danger=0",
+   "RIGHT": "foodDist=7 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    2
+   ],
+   "body": [
+    [
+     5,
+     2
+    ]
+   ],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=6 space=144 danger=0",
+   "UP": "foodDist=6 space=144 danger=0",
+   "LEFT": "foodDist=8 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    2
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=7 space=144 danger=0",
+   "RIGHT": "foodDist=5 space=144 danger=0",
+   "UP": "foodDist=5 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    7,
+    2
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=6 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    7,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=5 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    8,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=1",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=1",
+   "RIGHT": "foodDist=2 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    2
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    2
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=0 space=0 danger=1",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    1
+   ],
+   "body": [],
+   "food": [
+    10,
+    0
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=1 space=144 danger=2",
+   "DOWN": "foodDist=3 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    3
+   ],
+   "body": [
+    [
+     3,
+     3
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=4 space=0 danger=0",
+   "RIGHT": "foodDist=4 space=0 danger=0",
+   "DOWN": "foodDist=2 space=0 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    4
+   ],
+   "body": [
+    [
+     3,
+     4
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=1 space=0 danger=0",
+   "LEFT": "foodDist=1 space=0 danger=0",
+   "RIGHT": "foodDist=3 space=0 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [
+    [
+     3,
+     5
+    ]
+   ],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    5
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    7
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    2,
+    5
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    5
+   ],
+   "body": [
+    [
+     2,
+     5
+    ]
+   ],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=11 space=144 danger=0",
+   "DOWN": "foodDist=9 space=144 danger=0",
+   "LEFT": "foodDist=11 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=12 space=144 danger=0",
+   "RIGHT": "foodDist=10 space=144 danger=0",
+   "UP": "foodDist=12 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=9 space=144 danger=0",
+   "DOWN": "foodDist=9 space=144 danger=0",
+   "UP": "foodDist=11 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    3
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=10 space=144 danger=0",
+   "UP": "foodDist=12 space=144 danger=0",
+   "LEFT": "foodDist=12 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    3
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=11 space=144 danger=0",
+   "DOWN": "foodDist=9 space=144 danger=0",
+   "RIGHT": "foodDist=9 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    3
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=10 space=144 danger=0",
+   "RIGHT": "foodDist=8 space=144 danger=0",
+   "DOWN": "foodDist=8 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=7 space=144 danger=0",
+   "LEFT": "foodDist=9 space=144 danger=0",
+   "DOWN": "foodDist=7 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=6 space=144 danger=0",
+   "RIGHT": "foodDist=6 space=144 danger=0",
+   "UP": "foodDist=8 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=5 space=144 danger=0",
+   "LEFT": "foodDist=7 space=144 danger=0",
+   "DOWN": "foodDist=5 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=6 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=6 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    7,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=5 space=144 danger=0",
+   "UP": "foodDist=5 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    8,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=0 space=0 danger=1",
+   "DOWN": "foodDist=2 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=1",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=1",
+   "DOWN": "foodDist=0 space=0 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    4
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=0 space=0 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    5
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=1 space=144 danger=1",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=0 space=0 danger=1",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    7
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=1"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    7
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=0 space=0 danger=1",
+   "DOWN": "foodDist=2 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    8
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    8
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    7
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=1 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=1",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    6
+   ],
+   "body": [],
+   "food": [
+    11,
+    6
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=0 space=0 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    6
+   ],
+   "body": [
+    [
+     11,
+     6
+    ]
+   ],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=10 space=144 danger=1",
+   "DOWN": "foodDist=8 space=144 danger=1"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    11,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=7 space=144 danger=0",
+   "DOWN": "foodDist=9 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    10,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=6 space=144 danger=0",
+   "UP": "foodDist=8 space=144 danger=0",
+   "DOWN": "foodDist=8 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    9,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=7 space=144 danger=0",
+   "LEFT": "foodDist=5 space=144 danger=0",
+   "UP": "foodDist=7 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    8,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=6 space=144 danger=0",
+   "UP": "foodDist=6 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    7,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=5 space=144 danger=0",
+   "DOWN": "foodDist=5 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=0 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "UP": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=0 space=0 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    9
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    9
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=0 space=0 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=0 space=0 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    9
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    9
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=0 space=0 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    1,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=1",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    1,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=1",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "UP": "foodDist=4 space=144 danger=0",
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=5 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=5 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=0 space=0 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    1,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=1",
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    1,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=1"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=0 space=0 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=1 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "DOWN": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=0 space=0 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "RIGHT": "foodDist=2 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "RIGHT"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=4 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    6,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "DOWN"
+  },
+  "criteria": {
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "DOWN": "foodDist=5 space=144 danger=0",
+   "RIGHT": "foodDist=5 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    8
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    5,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "LEFT": "foodDist=1 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "RIGHT": "foodDist=3 space=144 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    7
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "UP": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "LEFT": "foodDist=0 space=0 danger=0"
+  },
+  "label": 0
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    4,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=1 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    6
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "LEFT": "foodDist=2 space=144 danger=0",
+   "DOWN": "foodDist=0 space=0 danger=0",
+   "UP": "foodDist=2 space=144 danger=0"
+  },
+  "label": 2
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    3,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "UP"
+  },
+  "criteria": {
+   "RIGHT": "foodDist=3 space=144 danger=0",
+   "LEFT": "foodDist=3 space=144 danger=0",
+   "UP": "foodDist=3 space=144 danger=0"
+  },
+  "label": 1
+ },
+ {
+  "state": {
+   "game": "snake",
+   "board": "12x12",
+   "head": [
+    2,
+    5
+   ],
+   "body": [],
+   "food": [
+    3,
+    7
+   ],
+   "facing": "LEFT"
+  },
+  "criteria": {
+   "DOWN": "foodDist=2 space=144 danger=0",
+   "UP": "foodDist=4 space=144 danger=0",
+   "LEFT": "foodDist=4 space=144 danger=0"
+  },
+  "label": 0
+ }
+]

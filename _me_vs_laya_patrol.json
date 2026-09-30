@@ -1,0 +1,9 @@
+{
+ "arm": "patrol",
+ "seed": 20260929,
+ "food": 91,
+ "steps": 2831,
+ "cause": "WIN 吃满",
+ "jumps": 0,
+ "pp": 144
+}

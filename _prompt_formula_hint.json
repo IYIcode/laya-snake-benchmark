@@ -1,0 +1,70 @@
+[
+ {
+  "seed": 1003,
+  "arm": "hint",
+  "food": 50,
+  "cause": "wall/body",
+  "steps": 1670,
+  "obey_rate": 0.997,
+  "first_rule_break": {
+   "step": 893,
+   "food": 28,
+   "choice": "RIGHT",
+   "opt": "(8,10) free, NEARER to food, cyc=19"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1004,
+  "arm": "hint",
+  "food": 141,
+  "cause": "WIN 通关",
+  "steps": 5324,
+  "obey_rate": 0.998,
+  "first_rule_break": {
+   "step": 1362,
+   "food": 40,
+   "choice": "RIGHT",
+   "opt": "(8,3) free, NEARER to food, cyc=5"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1005,
+  "arm": "hint",
+  "food": 75,
+  "cause": "wall/body",
+  "steps": 2595,
+  "obey_rate": 0.994,
+  "first_rule_break": {
+   "step": 814,
+   "food": 30,
+   "choice": "DOWN",
+   "opt": "(4,1) free, NEARER to food, cyc=49"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ },
+ {
+  "seed": 1006,
+  "arm": "hint",
+  "food": 61,
+  "cause": "wall/body",
+  "steps": 2071,
+  "obey_rate": 0.998,
+  "first_rule_break": {
+   "step": 1662,
+   "food": 49,
+   "choice": "DOWN",
+   "opt": "(4,1) free, NEARER to food, cyc=49"
+  },
+  "rescue_activations": 0,
+  "rescue_steps": 0,
+  "auto_rate": 1.0
+ }
+]

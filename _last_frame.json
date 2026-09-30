@@ -1,0 +1,35 @@
+{
+ "t": 1790387208.8,
+ "model": "v5",
+ "head": [
+  3,
+  2
+ ],
+ "food": [
+  3,
+  0
+ ],
+ "facing": "UP",
+ "len": 40,
+ "criteria": {
+  "UP": "foodDist=1 space=104 danger=2",
+  "DOWN": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+  "LEFT": "foodDist=3 space=104 danger=1",
+  "RIGHT": "foodDist=3 space=104 danger=3"
+ },
+ "raw": {
+  "UP": 0.7956,
+  "DOWN": 0.0087,
+  "LEFT": 0.1289,
+  "RIGHT": 0.0668
+ },
+ "masked": true,
+ "probs": {
+  "UP": 0.8026,
+  "DOWN": 0.0,
+  "LEFT": 0.13,
+  "RIGHT": 0.0674
+ },
+ "choice": "UP",
+ "ms": 31.1
+}

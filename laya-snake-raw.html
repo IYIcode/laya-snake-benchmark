@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>Laya 裸棋盘 · 无训练 · 无小抄</title>
+<style>
+  body { margin:0; background:#07070f; color:#ccc; font:14px/1.5 "Microsoft YaHei",Consolas,monospace; }
+  h1 { font-size:17px; margin:14px 20px 4px; color:#eee; }
+  .sub { margin:0 20px 10px; color:#666; font-size:12px; }
+  .wrap { display:flex; gap:18px; align-items:flex-start; padding:0 20px; }
+  .panel { background:#0b0b18; border:1px solid #1e1e38; border-radius:10px; padding:12px; }
+  canvas { background:#0d0d20; border-radius:6px; display:block; }
+  .stats { display:flex; gap:14px; margin-top:8px; font-size:12px; color:#889; flex-wrap:wrap; }
+  .stats b { color:#eee; }
+  /* 十字方向键：上/下/左/右按方位排列 */
+  .dpad { display:grid; grid-template-columns:64px 64px 64px; grid-template-rows:56px 56px 56px; gap:6px; justify-items:center; align-items:center; }
+  .dpad button { width:60px; height:50px; border:1px solid #334; border-radius:8px; background:#14142a; color:#aab; font-size:15px; cursor:pointer; position:relative; transition:background .15s, box-shadow .15s; }
+  .dpad button small { display:block; font-size:10px; color:#778; }
+  .dpad button.pick { background:#2f6df6; color:#fff; box-shadow:0 0 14px #2f6df688; }   /* 模型选中=深色点亮 */
+  .dpad button.pick small { color:#cfe; }
+  .dpad button.manual { outline:2px solid #e0a; }
+  #bu{grid-column:2;grid-row:1} #bl{grid-column:1;grid-row:2} #br{grid-column:3;grid-row:2} #bd{grid-column:2;grid-row:3}
+  .ctl { margin-top:10px; font-size:12px; color:#889; display:flex; flex-direction:column; gap:6px; }
+  .ctl button { background:#1a1a30; color:#ccd; border:1px solid #334; border-radius:6px; padding:5px 10px; cursor:pointer; }
+  #log { width:330px; height:520px; overflow:auto; font-size:11px; background:#08081a; border:1px solid #1a1a30; border-radius:6px; padding:8px; }
+  #log div { border-bottom:1px solid #12122a; padding:2px 0; }
+  #log .died { color:#f66; } #log .ate { color:#6e6; } #log .man { color:#fa0; }
+  #gridView { margin-top:10px; font:11px/1.25 Consolas,monospace; color:#9ab; white-space:pre; background:#08081a; border:1px solid #1a1a30; border-radius:6px; padding:8px; }
+  #engine { font-size:12px; margin:0 20px 8px; } .ok{color:#0c6;} .bad{color:#e05;}
+</style></head><body>
+<h1>贪吃蛇 · 裸棋盘决策 <span style="color:#2f6df6">无任何训练 · 无特征小抄 · 无防自杀遮罩</span></h1>
+<div class="sub">模型只看到：规则文本 + 12×12 棋盘（0 空 / 1 蛇身 / 2 蛇头 / 3 食物）+ 上下左右四个选项。它选什么就走什么，撞墙撞身当场死亡。</div>
+<div id="engine" class="bad">桥接检查中…</div>
+<div class="wrap">
+  <div class="panel"><canvas id="cv" width="480" height="480"></canvas>
+    <div class="stats">得分(食物) <b id="score">0</b>　蛇长 <b id="len">3</b>　步 <b id="step">0</b>　推理 <b id="ms">—</b>ms　本局死因 <b id="cause">—</b>　累计 <b id="games">0</b> 局 均 <b id="avg">—</b></div>
+  </div>
+  <div class="panel">
+    <div style="font-size:12px;color:#889;margin-bottom:6px">模型四选一（点亮 = 本步决策；点击按钮 = 人工接管一步）</div>
+    <div class="dpad">
+      <button id="bu" onclick="force='UP'">上<small id="pu">—</small></button>
+      <button id="bl" onclick="force='LEFT'">左<small id="pl">—</small></button>
+      <button id="br" onclick="force='RIGHT'">右<small id="pr">—</small></button>
+      <button id="bd" onclick="force='DOWN'">下<small id="pd">—</small></button>
+    </div>
+    <div class="ctl">
+      <label>步速 <input type="range" id="pace" min="80" max="1200" value="350" style="width:150px"> <span id="paceV">350</span>ms</label>
+      <div><button id="btnRun" onclick="toggle()">暂停</button> <button onclick="resetGame()">重开本局</button></div>
+      <div id="sentLbl" style="color:#556">↓ 这就是模型每步收到的棋盘原文</div>
+    </div>
+    <div id="gridView"></div>
+  </div>
+  <div class="panel"><div style="font-size:12px;color:#889;margin-bottom:4px">决策流水（真实模型输出概率）</div><div id="log"></div></div>
+</div>
+<script>
+const BRIDGE='http://127.0.0.1:8890', GW=12, GH=12, N=40, DIRS={UP:[0,-1],DOWN:[0,1],LEFT:[-1,0],RIGHT:[1,0]}, CN={UP:'上',DOWN:'下',LEFT:'左',RIGHT:'右'};   // 坐标=[x列,y行]，行从上到下
+const RULES="You are driving a snake in a 12x12 grid game. The board is given as 12 rows of 12 characters: '0' empty cell, '1' snake body, '2' snake head, '3' food. Row 0 is the top wall, row 11 the bottom wall; column 0 the left wall, column 11 the right wall; rows are listed top to bottom. UP moves the head to row-1, DOWN to row+1, LEFT to col-1, RIGHT to col+1. Choose the direction that leads the head toward the food while staying alive: never step into a wall or into a '1' body cell.";
+const OPTS={UP:'move one cell up (row-1)',DOWN:'move one cell down (row+1)',LEFT:'move one cell left (col-1)',RIGHT:'move one cell right (col+1)'};
+let snake, facing, food, score, steps, alive, pend, gen=0, force=null, running=true;
+let msSum=0, msN=0, games=0, foodSum=0;
+
+async function api(path,body){const r=await fetch(BRIDGE+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});return r.json();}
+function randFood(){const free=[];for(let x=0;x<GW;x++)for(let y=0;y<GH;y++)if(!snake.some(s=>s[0]===x&&s[1]===y))free.push([x,y]);return free[Math.floor(Math.random()*free.length)];}
+function resetGame(){gen++;force=null;const y=6,xs=[2,1,0];snake=xs.map(i=>[i,y]);facing='RIGHT';score=0;steps=0;alive=true;pend=false;
+  food=randFood();ui();draw();setCause('—');document.getElementById('log').innerHTML='';log('','── 新开局：蛇头(2,6) 朝右 ──');}
+function gridRows(){const g=Array.from({length:GH},()=>Array(GW).fill('0'));   // g[行y][列x]，第 0 行=顶部
+  snake.forEach((s,i)=>{if(i===0)g[s[1]][s[0]]='2';else g[s[1]][s[0]]='1';});g[food[1]][food[0]]='3';return g.map(r=>r.join(''));}
+
+async function step(){
+  if(!alive||!running)return;
+  const myGen=gen;
+  const state={game:'snake',board:'12x12',grid:gridRows()};
+  document.getElementById('gridView').textContent=gridRows().join('\n');
+  let j;
+  try{ j=await api('/decide',{model:'laya',state,instructions:RULES,criteria:OPTS}); }
+  catch(e){ log('died','桥接离线/超时：'+e); setTimeout(step,800); return; }
+  if(myGen!==gen)return;                       // 本局已被重开，丢弃过期决策
+  const p=j.probabilities||j.raw_probabilities||{};
+  for(const d of ['UP','LEFT','RIGHT','DOWN']){
+    document.getElementById('p'+d[0].toLowerCase()).textContent=((p[d]??0)*100).toFixed(0)+'%';
+    document.getElementById('b'+d[0].toLowerCase()).classList.remove('pick','manual');}
+  let dir=force; const manual=!!dir;
+  if(!dir)dir=j.choice; force=null;
+  document.getElementById('b'+dir[0].toLowerCase()).classList.add(manual?'manual':'pick');
+  msSum+=(j.ms||0); msN++; steps++;
+  const nh=[snake[0][0]+DIRS[dir][0], snake[0][1]+DIRS[dir][1]];
+  const eat=nh[0]===food[0]&&nh[1]===food[1];
+  const body=eat?snake:snake.slice(0,-1);       // 不吃时蛇尾让格（经典规则）
+  const wall=nh[0]<0||nh[0]>=GW||nh[1]<0||nh[1]>=GH;
+  const hit=body.some(s=>s[0]===nh[0]&&s[1]===nh[1]);
+  const pct=['UP','DOWN','LEFT','RIGHT'].map(d=>`${CN[d]}${((p[d]??0)*100).toFixed(0)}`).join(' ');
+  log(manual?'man':'', `#${steps} ${manual?'【人工】':''}${j.choice}(${pct}) ${j.ms?.toFixed(0)}ms`);
+  if(wall||hit){ die(wall?'撞墙':'撞身'); return; }
+  snake.unshift(nh); facing=dir;
+  if(eat){ score++; food=randFood(); log('ate',`吃到！+1（共 ${score}）`); } else snake.pop();
+  ui(); draw(); setTimeout(step, +document.getElementById('pace').value);
+}
+function die(c){alive=false;setCause(c);games++;foodSum+=score;
+  log('died',`☠ ${c}，本局 ${score} 食物 / ${steps} 步`);ui();draw();
+  setTimeout(()=>{ if(running) resetGame(), step(); },1600);}
+
+function draw(){const cv=document.getElementById('cv'),g=cv.getContext('2d');
+  g.fillStyle='#0d0d20';g.fillRect(0,0,cv.width,cv.height);
+  g.strokeStyle='#1a1a30';for(let i=0;i<=GW;i++){g.beginPath();g.moveTo(i*N+.5,0);g.lineTo(i*N+.5,GH*N);g.stroke();g.beginPath();g.moveTo(0,i*N+.5);g.lineTo(GW*N,i*N+.5);g.stroke();}
+  g.fillStyle='#e33';const[fx,fy]=food;g.fillRect(fx*N+6,fy*N+6,N-12,N-12);
+  snake.forEach((s,i)=>{g.fillStyle=i===0?(alive?'#4dd2ff':'#888'):(alive?'#1f8fb8':'#556');g.fillRect(s[0]*N+2,s[1]*N+2,N-4,N-4);});
+  if(!alive){g.fillStyle='#f55';g.font='28px sans-serif';g.fillText('☠ '+document.getElementById('cause').textContent,GW*N/2-70,GH*N/2);}}
+function ui(){const s=id=>document.getElementById(id);s('score').textContent=score;s('len').textContent=snake.length;s('step').textContent=steps;
+  s('ms').textContent=msN?(msSum/msN).toFixed(1):'—';s('games').textContent=games;s('avg').textContent=games?(foodSum/games).toFixed(1):'—';}
+function setCause(c){document.getElementById('cause').textContent=c;}
+function log(cls,txt){const el=document.getElementById('log');const d=document.createElement('div');d.className=cls;d.textContent=txt;el.prepend(d);while(el.children.length>60)el.lastChild.remove();}
+function toggle(){running=!running;document.getElementById('btnRun').textContent=running?'暂停':'继续';if(running&&alive&&!pend){pend=true;step();}else if(running&&!alive){resetGame();step();}}
+document.getElementById('pace').oninput=e=>document.getElementById('paceV').textContent=e.target.value;
+
+(async()=>{try{const h=await api('/health');if(!h.ok)throw 0;
+    setEng('ok','真实 Laya 底模在线 ✓ '+(h.models.laya?h.models.laya.model:''));}
+  catch(e){setEng('bad','桥接离线：先运行 laya_bridge.py');}
+  resetGame(); pend=true; step();})();
+function setEng(c,t){const el=document.getElementById('engine');el.className=c;el.textContent=t;}
+</script></body></html>

@@ -1,0 +1,818 @@
+{
+ "health": {
+  "ok": true,
+  "default": "v2",
+  "models": {
+   "v2": {
+    "model": "gen3 平均37.2食物/局",
+    "device": "cuda",
+    "warm_ms": 252.9
+   },
+   "v5": {
+    "model": "laya-snake-ft (421M ModernBERT) [v5]",
+    "device": "cuda",
+    "warm_ms": 202.8
+   },
+   "v3": {
+    "model": "v3网格版 平均28.1食物/局",
+    "device": "cuda",
+    "warm_ms": 206.8
+   },
+   "v1": {
+    "model": "laya-snake-ft (421M ModernBERT) [v1]",
+    "device": "cuda",
+    "warm_ms": 214.7
+   }
+  }
+ },
+ "shots": [
+  {
+   "model": "v2",
+   "scene": "贴墙冲食物",
+   "reply": {
+    "choice": "LEFT",
+    "probabilities": {
+     "UP": 0.0038,
+     "DOWN": 0.0,
+     "LEFT": 0.9962
+    },
+    "raw_probabilities": {
+     "UP": 0.0038,
+     "DOWN": 0.0,
+     "LEFT": 0.9962
+    },
+    "masked": true,
+    "confidence": 0.9773,
+    "ms": 44.2,
+    "model": "v2",
+    "tag": "gen3 平均37.2食物/局"
+   }
+  },
+  {
+   "model": "v2",
+   "scene": "死胡同陷阱",
+   "reply": {
+    "choice": "UP",
+    "probabilities": {
+     "LEFT": 0.0001,
+     "DOWN": 0.0,
+     "RIGHT": 0.0048,
+     "UP": 0.9951
+    },
+    "raw_probabilities": {
+     "LEFT": 0.0001,
+     "DOWN": 0.0,
+     "RIGHT": 0.0048,
+     "UP": 0.9951
+    },
+    "masked": true,
+    "confidence": 0.9775,
+    "ms": 47.6,
+    "model": "v2",
+    "tag": "gen3 平均37.2食物/局"
+   }
+  },
+  {
+   "model": "v2",
+   "scene": "食物正前方",
+   "reply": {
+    "choice": "RIGHT",
+    "probabilities": {
+     "UP": 0.0046,
+     "DOWN": 0.0001,
+     "RIGHT": 0.9953
+    },
+    "raw_probabilities": {
+     "UP": 0.0046,
+     "DOWN": 0.0001,
+     "RIGHT": 0.9953
+    },
+    "masked": false,
+    "confidence": 0.9722,
+    "ms": 36.8,
+    "model": "v2",
+    "tag": "gen3 平均37.2食物/局"
+   }
+  },
+  {
+   "model": "v5",
+   "scene": "贴墙冲食物",
+   "reply": {
+    "choice": "LEFT",
+    "probabilities": {
+     "UP": 0.043508701740348064,
+     "DOWN": 0.0,
+     "LEFT": 0.956491298259652
+    },
+    "raw_probabilities": {
+     "UP": 0.0435,
+     "DOWN": 0.0002,
+     "LEFT": 0.9563
+    },
+    "masked": true,
+    "confidence": 0.8356,
+    "ms": 34.4,
+    "model": "v5",
+    "tag": "laya-snake-ft (421M ModernBERT) [v5]"
+   }
+  },
+  {
+   "model": "v5",
+   "scene": "死胡同陷阱",
+   "reply": {
+    "choice": "UP",
+    "probabilities": {
+     "LEFT": 0.0035007001400280055,
+     "DOWN": 0.0,
+     "RIGHT": 0.02530506101220244,
+     "UP": 0.9711942388477695
+    },
+    "raw_probabilities": {
+     "LEFT": 0.0035,
+     "DOWN": 0.0002,
+     "RIGHT": 0.0253,
+     "UP": 0.971
+    },
+    "masked": true,
+    "confidence": 0.8969,
+    "ms": 36.7,
+    "model": "v5",
+    "tag": "laya-snake-ft (421M ModernBERT) [v5]"
+   }
+  },
+  {
+   "model": "v5",
+   "scene": "食物正前方",
+   "reply": {
+    "choice": "RIGHT",
+    "probabilities": {
+     "UP": 0.0189,
+     "DOWN": 0.0017,
+     "RIGHT": 0.9794
+    },
+    "raw_probabilities": {
+     "UP": 0.0189,
+     "DOWN": 0.0017,
+     "RIGHT": 0.9794
+    },
+    "masked": false,
+    "confidence": 0.9033,
+    "ms": 31.1,
+    "model": "v5",
+    "tag": "laya-snake-ft (421M ModernBERT) [v5]"
+   }
+  }
+ ],
+ "log": {
+  "ok": true,
+  "count": 21,
+  "entries": [
+   {
+    "t": 1790342264.1,
+    "model": "v1",
+    "head": [
+     11,
+     8
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=10 space=141 danger=2",
+     "LEFT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.5772,
+     "LEFT": 0.1853,
+     "RIGHT": 0.2376
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 1.0,
+     "LEFT": 0.0,
+     "RIGHT": 0.0
+    },
+    "choice": "DOWN",
+    "ms": 43.5
+   },
+   {
+    "t": 1790342264.2,
+    "model": "v1",
+    "head": [
+     11,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=11 space=141 danger=2",
+     "LEFT": "foodDist=9 space=141 danger=2",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.0444,
+     "LEFT": 0.9255,
+     "RIGHT": 0.0301
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.0458,
+     "LEFT": 0.9542,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 41.3
+   },
+   {
+    "t": 1790342264.5,
+    "model": "v1",
+    "head": [
+     10,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=10 space=141 danger=1",
+     "LEFT": "foodDist=8 space=141 danger=1",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.0168,
+     "LEFT": 0.9736,
+     "RIGHT": 0.0095
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.017,
+     "LEFT": 0.983,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 36.9
+   },
+   {
+    "t": 1790342264.8,
+    "model": "v1",
+    "head": [
+     9,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=9 space=141 danger=1",
+     "LEFT": "foodDist=9 space=141 danger=1",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.1355,
+     "LEFT": 0.8143,
+     "RIGHT": 0.0501
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.1427,
+     "LEFT": 0.8573,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 36.6
+   },
+   {
+    "t": 1790342265.1,
+    "model": "v1",
+    "head": [
+     8,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=10 space=141 danger=1",
+     "LEFT": "foodDist=10 space=141 danger=1",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.0866,
+     "LEFT": 0.8708,
+     "RIGHT": 0.0426
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.0905,
+     "LEFT": 0.9095,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 38.9
+   },
+   {
+    "t": 1790342265.4,
+    "model": "v1",
+    "head": [
+     7,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=11 space=141 danger=1",
+     "LEFT": "foodDist=11 space=141 danger=1",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.1223,
+     "LEFT": 0.8033,
+     "RIGHT": 0.0744
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.1321,
+     "LEFT": 0.8679,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 33.8
+   },
+   {
+    "t": 1790342265.7,
+    "model": "v1",
+    "head": [
+     6,
+     9
+    ],
+    "food": [
+     9,
+     1
+    ],
+    "facing": "DOWN",
+    "len": 3,
+    "criteria": {
+     "DOWN": "foodDist=12 space=141 danger=1",
+     "LEFT": "foodDist=12 space=141 danger=1",
+     "RIGHT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4"
+    },
+    "raw": {
+     "DOWN": 0.1232,
+     "LEFT": 0.7807,
+     "RIGHT": 0.0961
+    },
+    "masked": true,
+    "probs": {
+     "DOWN": 0.1363,
+     "LEFT": 0.8637,
+     "RIGHT": 0.0
+    },
+    "choice": "LEFT",
+    "ms": 35.2
+   },
+   {
+    "t": 1790342266.0,
+    "model": "v2",
+    "head": [
+     8,
+     11
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=14 space=141 danger=2"
+    },
+    "raw": {
+     "UP": 0.0002,
+     "DOWN": 0.0002,
+     "RIGHT": 0.9996
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.0,
+     "DOWN": 0.0,
+     "RIGHT": 1.0
+    },
+    "choice": "RIGHT",
+    "ms": 49.4
+   },
+   {
+    "t": 1790342266.2,
+    "model": "v2",
+    "head": [
+     9,
+     11
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=13 space=141 danger=2",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=15 space=141 danger=2"
+    },
+    "raw": {
+     "UP": 0.9969,
+     "DOWN": 0.0,
+     "RIGHT": 0.0031
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.9969,
+     "DOWN": 0.0,
+     "RIGHT": 0.0031
+    },
+    "choice": "UP",
+    "ms": 35.8
+   },
+   {
+    "t": 1790342266.5,
+    "model": "v2",
+    "head": [
+     9,
+     10
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=12 space=141 danger=1",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=14 space=141 danger=1"
+    },
+    "raw": {
+     "UP": 0.9882,
+     "DOWN": 0.0001,
+     "RIGHT": 0.0118
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.9882,
+     "DOWN": 0.0,
+     "RIGHT": 0.0118
+    },
+    "choice": "UP",
+    "ms": 37.2
+   },
+   {
+    "t": 1790342266.8,
+    "model": "v2",
+    "head": [
+     9,
+     9
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=11 space=141 danger=1",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=13 space=141 danger=1"
+    },
+    "raw": {
+     "UP": 0.9916,
+     "DOWN": 0.0001,
+     "RIGHT": 0.0083
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.9917,
+     "DOWN": 0.0,
+     "RIGHT": 0.0083
+    },
+    "choice": "UP",
+    "ms": 38.5
+   },
+   {
+    "t": 1790342267.1,
+    "model": "v2",
+    "head": [
+     9,
+     8
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=10 space=141 danger=1",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=12 space=141 danger=1"
+    },
+    "raw": {
+     "UP": 0.8685,
+     "DOWN": 0.0004,
+     "RIGHT": 0.1311
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.8688,
+     "DOWN": 0.0,
+     "RIGHT": 0.1312
+    },
+    "choice": "UP",
+    "ms": 36.1
+   },
+   {
+    "t": 1790342267.4,
+    "model": "v2",
+    "head": [
+     9,
+     7
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=9 space=141 danger=1",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=11 space=141 danger=1"
+    },
+    "raw": {
+     "UP": 0.8022,
+     "DOWN": 0.0005,
+     "RIGHT": 0.1973
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.8026,
+     "DOWN": 0.0,
+     "RIGHT": 0.1974
+    },
+    "choice": "UP",
+    "ms": 32.8
+   },
+   {
+    "t": 1790342267.7,
+    "model": "v2",
+    "head": [
+     9,
+     6
+    ],
+    "food": [
+     2,
+     4
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=8 space=141 danger=1",
+     "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+     "RIGHT": "foodDist=10 space=141 danger=1"
+    },
+    "raw": {
+     "UP": 0.963,
+     "DOWN": 0.0002,
+     "RIGHT": 0.0367
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.9633,
+     "DOWN": 0.0,
+     "RIGHT": 0.0367
+    },
+    "choice": "UP",
+    "ms": 33.3
+   },
+   {
+    "t": 1790342389.2,
+    "model": "v2",
+    "head": [
+     11,
+     5
+    ],
+    "food": [
+     11,
+     2
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=4 space=40 danger=1",
+     "DOWN": "BLOCKED: hits wall or body right away",
+     "LEFT": "foodDist=3 space=40 danger=0"
+    },
+    "raw": {
+     "UP": 0.0038,
+     "DOWN": 0.0,
+     "LEFT": 0.9962
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.0038,
+     "DOWN": 0.0,
+     "LEFT": 0.9962
+    },
+    "choice": "LEFT",
+    "ms": 44.2
+   },
+   {
+    "t": 1790342389.3,
+    "model": "v2",
+    "head": [
+     6,
+     6
+    ],
+    "food": [
+     8,
+     6
+    ],
+    "facing": "DOWN",
+    "len": 5,
+    "criteria": {
+     "LEFT": "foodDist=8 space=2 danger=3",
+     "DOWN": "BLOCKED: hits wall or body right away",
+     "RIGHT": "foodDist=6 space=30 danger=1",
+     "UP": "foodDist=4 space=50 danger=0"
+    },
+    "raw": {
+     "LEFT": 0.0001,
+     "DOWN": 0.0,
+     "RIGHT": 0.0048,
+     "UP": 0.9951
+    },
+    "masked": true,
+    "probs": {
+     "LEFT": 0.0001,
+     "DOWN": 0.0,
+     "RIGHT": 0.0048,
+     "UP": 0.9951
+    },
+    "choice": "UP",
+    "ms": 47.6
+   },
+   {
+    "t": 1790342389.3,
+    "model": "v2",
+    "head": [
+     5,
+     5
+    ],
+    "food": [
+     6,
+     5
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=7 space=40 danger=1",
+     "DOWN": "foodDist=9 space=40 danger=1",
+     "RIGHT": "foodDist=0 space=40 danger=0"
+    },
+    "raw": {
+     "UP": 0.0046,
+     "DOWN": 0.0001,
+     "RIGHT": 0.9953
+    },
+    "masked": false,
+    "probs": {
+     "UP": 0.0046,
+     "DOWN": 0.0001,
+     "RIGHT": 0.9953
+    },
+    "choice": "RIGHT",
+    "ms": 36.8
+   },
+   {
+    "t": 1790342389.3,
+    "model": "v5",
+    "head": [
+     11,
+     5
+    ],
+    "food": [
+     11,
+     2
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=4 space=40 danger=1",
+     "DOWN": "BLOCKED: hits wall or body right away",
+     "LEFT": "foodDist=3 space=40 danger=0"
+    },
+    "raw": {
+     "UP": 0.0435,
+     "DOWN": 0.0002,
+     "LEFT": 0.9563
+    },
+    "masked": true,
+    "probs": {
+     "UP": 0.0435,
+     "DOWN": 0.0,
+     "LEFT": 0.9565
+    },
+    "choice": "LEFT",
+    "ms": 34.4
+   },
+   {
+    "t": 1790342389.4,
+    "model": "v5",
+    "head": [
+     6,
+     6
+    ],
+    "food": [
+     8,
+     6
+    ],
+    "facing": "DOWN",
+    "len": 5,
+    "criteria": {
+     "LEFT": "foodDist=8 space=2 danger=3",
+     "DOWN": "BLOCKED: hits wall or body right away",
+     "RIGHT": "foodDist=6 space=30 danger=1",
+     "UP": "foodDist=4 space=50 danger=0"
+    },
+    "raw": {
+     "LEFT": 0.0035,
+     "DOWN": 0.0002,
+     "RIGHT": 0.0253,
+     "UP": 0.971
+    },
+    "masked": true,
+    "probs": {
+     "LEFT": 0.0035,
+     "DOWN": 0.0,
+     "RIGHT": 0.0253,
+     "UP": 0.9712
+    },
+    "choice": "UP",
+    "ms": 36.7
+   },
+   {
+    "t": 1790342389.4,
+    "model": "v5",
+    "head": [
+     5,
+     5
+    ],
+    "food": [
+     6,
+     5
+    ],
+    "facing": "RIGHT",
+    "len": 3,
+    "criteria": {
+     "UP": "foodDist=7 space=40 danger=1",
+     "DOWN": "foodDist=9 space=40 danger=1",
+     "RIGHT": "foodDist=0 space=40 danger=0"
+    },
+    "raw": {
+     "UP": 0.0189,
+     "DOWN": 0.0017,
+     "RIGHT": 0.9794
+    },
+    "masked": false,
+    "probs": {
+     "UP": 0.0189,
+     "DOWN": 0.0017,
+     "RIGHT": 0.9794
+    },
+    "choice": "RIGHT",
+    "ms": 31.1
+   }
+  ]
+ }
+}

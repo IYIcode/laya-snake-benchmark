@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Laya 真实模型观察台 · 贪吃蛇</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0a1a; color:#e0e0e0; overflow:hidden;
+    font-family:'Segoe UI','Microsoft YaHei',system-ui,sans-serif;
+    width:100vw; height:100vh; display:flex; flex-direction:column;
+  }
+  header { display:flex; align-items:center; gap:18px; padding:10px 20px; border-bottom:1px solid #1c1c30; flex:0 0 auto; }
+  header h1 { font-size:17px; color:#00e676; font-weight:600; }
+  .stat { font-size:13px; color:#888; }
+  .stat b { color:#e0e0e0; font-family:Consolas,monospace; }
+  #engine { margin-left:auto; font-size:12px; padding:4px 12px; border-radius:14px; border:1px solid #333; color:#999; }
+  #engine.ok   { color:#00e676; border-color:#00e67655; background:#00e67610; }
+  #engine.bad  { color:#ff5252; border-color:#ff525255; background:#ff525210; }
+  main { flex:1; display:flex; gap:16px; padding:14px 20px; min-height:0; }
+  #left  { flex:0 0 auto; display:flex; flex-direction:column; gap:10px; }
+  #board { background:#0d0d20; border:1px solid #1a1a30; border-radius:6px; }
+  #controls { display:flex; gap:10px; align-items:center; }
+  button {
+    background:none; border:1px solid #444; color:#ccc; padding:5px 14px;
+    border-radius:16px; cursor:pointer; font-size:12px; font-family:inherit;
+  }
+  button:hover { border-color:#00e676; color:#00e676; }
+  button.on { background:#00e67622; border-color:#00e676; color:#00e676; }
+  input[type=range] { width:130px; accent-color:#00e676; }
+  label { font-size:12px; color:#888; }
+  #right { flex:1; display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .card { background:#0f0f22; border:1px solid #1c1c34; border-radius:8px; padding:12px 16px; }
+  .card h2 { font-size:13px; color:#666; font-weight:600; margin-bottom:8px; }
+  #current .opt { display:flex; align-items:center; gap:10px; margin:7px 0; font-family:Consolas,monospace; font-size:13px; }
+  #current .name { width:88px; color:#aaa; flex:0 0 auto; }
+  #current .barwrap { flex:1; height:18px; background:#16162c; border-radius:4px; overflow:hidden; position:relative; }
+  #current .bar { height:100%; width:0; transition:width .12s; border-radius:4px; }
+  #current .pct { width:56px; text-align:right; color:#ddd; flex:0 0 auto; }
+  #current .params { width:278px; flex:0 0 auto; display:flex; gap:8px; justify-content:flex-end; }
+  #current .pg { display:flex; flex-direction:column; align-items:center; min-width:62px; background:#141428; border-radius:5px; padding:2px 6px 3px; }
+  #current .pg em { font-style:normal; font-size:9px; color:#556; }
+  #current .pg b { font-size:14px; font-weight:600; }
+  #current .pg.fdT b { color:#ffab40; } #current .pg.spT b { color:#69f0ae; } #current .pg.dzT b { color:#ff8a80; }
+  #current .opt.blocked .pg { background:#2a1015; }
+  #current .opt.blocked .pg b { color:#ff5252; }
+  #btnStart { background:#00e676; color:#003b1c; border-color:#00e676; font-weight:700; font-size:14px; padding:7px 18px; animation:pulse 1s infinite alternate; }
+  @keyframes pulse { from { box-shadow:0 0 4px #00e67655; } to { box-shadow:0 0 16px #00e676cc; } }
+  #deathLine { font-size:12px; color:#ff5252; font-family:Consolas,monospace; margin-top:4px; min-height:16px; }
+  #current .opt.pick .name { color:#00e676; font-weight:700; }
+  #current .opt.pick .bar { box-shadow:0 0 8px #00e67688; }
+  #current .opt.dead .bar { background:#ff525244 !important; }
+  #meta { display:flex; gap:16px; margin-top:6px; font-size:12px; color:#888; font-family:Consolas,monospace; }
+  #meta b { color:#ffab40; }
+  #log { flex:1; overflow:hidden; }
+  #logList { font-family:Consolas,monospace; font-size:12px; line-height:1.9; height:calc(100% - 26px); overflow:hidden; }
+  #logList .r-move  { color:#00e676; }
+  #logList .r-food  { color:#ffab40; }
+  #logList .r-died  { color:#ff5252; }
+  #logList .r-forced{ color:#666; }
+  #payload { font-family:Consolas,monospace; font-size:11px; color:#556; white-space:pre-wrap; word-break:break-all; line-height:1.5; max-height:120px; overflow:auto; }
+  #payload .k { color:#7aa2f7; } #payload .s { color:#9ece6a; } #payload .n { color:#e0af68; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Laya 真实模型观察台</h1>
+  <span class="stat">得分 <b id="stScore">0</b></span>
+  <span class="stat">蛇长 <b id="stLen">3</b></span>
+  <span class="stat">决策 <b id="stDec">0</b> 次</span>
+  <span class="stat">平均 <b id="stMs">—</b> ms</span>
+  <span class="stat">最高分 <b id="stBest">0</b></span>
+  <span id="engine">连接中…</span>
+  <span class="stat">模型 <select id="selModel" style="background:#111;color:#9cf;border:1px solid #333;border-radius:4px;font-size:12px"></select></span>
+</header>
+<main>
+  <div id="left">
+    <canvas id="board"></canvas>
+    <div id="controls">
+      <button id="btnDrive" class="on">AI 驾驶（真实模型）</button>
+      <button id="btnStart" style="display:none">▶ 开始新一局</button>
+      <button id="btnPause">⏸ 暂停</button>
+      <button id="btnStep">单步 ▸</button>
+      <button id="btnBack">◂ 回退</button>
+      <button id="btnReset">重开一局</button>
+      <label>节奏 <input type="range" id="speed" min="60" max="1200" value="350" step="10"> <span id="spd" >350ms/步</span></label>
+    </div>
+    <div style="font-size:11px;color:#556">← ↑ → ↓ 随时接管键盘 · 空格 暂停 · Z 回退一步（死亡后也可回退复盘，单步可原样重放）</div>
+  </div>
+  <div id="right">
+    <div class="card" id="current">
+      <h2>这一步模型的输出（四个方向键全量呈现，掉头=撞颈标 BLOCKED 由模型自己学会不选；概率 = softmax，顺序每局随机打乱防位置偏差）<br><span style="color:#445;font-weight:400">foodDist=下一格（撞墙/撞身也按那格坐标算）到食物的曼哈顿距离，0=这一步就吃到 · space=下一格为空格时 flood-fill 可达空格数（不可去则 0；蛇尾这步腾空，不算墙） · 距死路=当前位置沿该方向到墙/蛇身的空格数（越大越安全；发给模型时做 fdpen6 变换：space 换成两拍前瞻值（走完这步、下一步蛇尾再腾空后能到达的最大区域），入袋格（前瞻space&lt;身长+2）foodDist+15、danger+2；稳吃格（fd=0 且非袋）danger 压到≤1；面板芯片仍显示真实一步值）</span></h2>
+      <div id="opts"></div>
+      <div id="deathLine"></div>
+      <div id="meta">
+        <span>模型选择: <b id="mChoice">…</b></span>
+        <span>置信度: <b id="mConf">—</b></span>
+        <span>推理耗时: <b id="mMs">—</b> ms</span>
+      </div>
+    </div>
+    <div class="card" id="log">
+      <h2>决策流水（最新在上）</h2>
+      <div id="logList"></div>
+    </div>
+    <div class="card">
+      <h2>刚发给真实模型的原始输入（state + criteria，JSON 原样）</h2>
+      <div id="payload">…</div>
+    </div>
+  </div>
+</main>
+<script>
+const BRIDGE='http://127.0.0.1:8891';   // 本侧专线：graveyard 权重+动作掩码；8890 留给主会话的裸模型桥
+const GW=12, GH=12;
+const DIRS=[{x:0,y:-1,n:'UP',cn:'上'},{x:0,y:1,n:'DOWN',cn:'下'},{x:-1,y:0,n:'LEFT',cn:'左'},{x:1,y:0,n:'RIGHT',cn:'右'}];
+const COL={UP:'#00b0ff',DOWN:'#b388ff',LEFT:'#ffab40',RIGHT:'#00e676'};
+const cn=n=>(DIRS.find(d=>d.n===n)||{cn:n}).cn;
+
+const cv=document.getElementById('board'), g=cv.getContext('2d');
+let CS;
+function fit(){
+  const maxH=innerHeight-150, maxW=innerWidth*0.46;
+  CS=Math.max(18,Math.min(Math.floor(maxH/GH),Math.floor(maxW/GW),52));
+  cv.width=GW*CS+2; cv.height=GH*CS+2;
+}
+fit(); addEventListener('resize',fit);
+
+let snake,food,dir,score=0,dec=0,msSum=0,best=0,manual=false,paused=false,pend=false,oneShot=false,bridgeOK=false;
+let dead=false, deathMsg='';
+let lastCands=[],lastProb=null,lastChoice=null,lastMs=null;
+const log=[];
+
+function isSafe(x,y,b){ return x>=0&&x<GW&&y>=0&&y<GH && !b.some(s=>s[0]===x&&s[1]===y); }
+function flood(sx,sy,b){
+  const occ=new Set(b.map(s=>s[0]+','+s[1])), vis=new Set([sx+','+sy]), q=[[sx,sy]]; let c=0;
+  while(q.length){ const[x,y]=q.shift(); c++;
+    for(const d of DIRS){ const nx=x+d.x,ny=y+d.y,k=nx+','+ny;
+      if(nx>=0&&nx<GW&&ny>=0&&ny<GH&&!vis.has(k)&&!occ.has(k)){vis.add(k);q.push([nx,ny]);} } }
+  return c;
+}
+function flood2(nh){
+  // 两拍前瞻（用户"下下步"设想，_tune.py flood2 的逐行移植）：落到 nh 后蛇尾腾空一格，
+  // 再走一步又腾空一格——从 nh 的每个邻格 flood（nh 本身算墙，蛇正从它上面离开），取最大可达区。
+  const wallsNext=[nh].concat(snake.slice(0,-2));
+  let best=0;
+  for(const d of DIRS){ const cx=nh[0]+d.x, cy=nh[1]+d.y;
+    if(isSafe(cx,cy,wallsNext)) best=Math.max(best,flood(cx,cy,wallsNext)); }
+  return best;
+}
+function decide(){
+  const h=snake[0];
+  const walls=snake.slice(0,-1);   // 蛇尾这一步会腾空（食物不会在尾上，这步必不伸长）——不算墙
+  // 四个方向全给模型：掉头方向照常呈现，但那格=蛇颈，天然 BLOCKED，靠模型自己（+动作掩码）不选它
+  return DIRS.map(d=>{
+    const nx=h[0]+d.x, ny=h[1]+d.y;
+    const rev=(d.x===-dir.x&&d.y===-dir.y);
+    const fd=Math.abs(nx-food[0])+Math.abs(ny-food[1]);   // 一律按"下一格"坐标算，撞墙/撞身也算
+    // 距死路：从当前位置沿该方向还能直走几格才碰墙/蛇身（下一格被占则为 0）
+    let run=0, rx=nx, ry=ny;
+    while(isSafe(rx,ry,walls)){ run++; rx+=d.x; ry+=d.y; }
+    if(!isSafe(nx,ny,walls)) return {...d,fd,sp:0,sp2:0,run,rev,s:-999,safe:false};
+    const sp=flood(nx,ny,walls);
+    const sp2=flood2([nx,ny]);   // 两拍前瞻空间：只用于发给模型的 space/入袋判定，面板显示真实 sp
+    let s=-fd*2+sp*0.5+run; if(sp<snake.length) s-=50;
+    return {...d,fd,sp,sp2,run,rev,s,safe:true};
+  });
+}
+function critOf(cands){
+  // fdpen6 判据（六轮调参冠军，均值 36.0→59.8，超过 BFS 老师的 ~53；_tune_runs/*.json 可回放）：
+  // space/入袋判定用两拍前瞻 sp2（flood2：走完这一步、下一步尾再腾空后能到的最大区，用户的"下下步"设想）；
+  // ① 入袋（sp2<身长+2）：foodDist 虚增+15 吓退（fd=0 免罚防"不敢吃绕圈"）、danger+2；
+  // ② 非入袋但 fd=0（这一步稳吃）：danger 压到 ≤1——修复实测"贴墙食物被 danger=3 吓放弃"误判。
+  // 面板芯片始终显示真实一步 fd/sp/距死路，只有发给模型的字符串做了变换（space 发的是 sp2）。
+  const pk=snake.length+2;
+  const o={}; for(const c of cands){
+    if(!c.safe){ o[c.n]= c.rev?'BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4'
+                              :'BLOCKED: hits wall or body; foodDist=0 space=0 danger=4'; continue; }
+    const pocket=c.sp2<pk;
+    let d=Math.min(4,Math.max(0,4-c.run)+(pocket?2:0));
+    if(!pocket && c.fd===0) d=Math.min(d,1);
+    o[c.n]=`foodDist=${(pocket&&c.fd>0)?c.fd+15:c.fd} space=${c.sp2} danger=${d}`;
+  }
+  return o;
+}
+let gameGen=0;
+let history=[];
+function snap(){  // 回退栈：记录"这一步之前的局面 + 当时面板显示的那次决策"
+  history.push({snake:snake.map(s=>[...s]),food:[...food],dir:dir.n,score,dec,lc:lastCands.slice(),lp:lastProb,lch:lastChoice,lm:lastMs});
+  if(history.length>1500) history.shift();
+}
+function reset(){
+  gameGen++;
+  dead=false; deathMsg=''; btnStart.style.display='none'; history=[];
+  const back={UP:[0,1],DOWN:[0,-1],LEFT:[1,0],RIGHT:[-1,0]};
+  dir=DIRS[Math.floor(Math.random()*4)];
+  const hx=3+Math.floor(Math.random()*6), hy=3+Math.floor(Math.random()*6);
+  snake=[[hx,hy],[hx+back[dir.n][0],hy+back[dir.n][1]],[hx+back[dir.n][0]*2,hy+back[dir.n][1]*2]];
+  placeFood(); score=0; pend=false; draw(); ui();
+}
+function die(msg){                     // 死亡：定格画面，等用户点「开始新一局」
+  dead=true; deathMsg=msg; pend=true;  // pend 保持 true，拦住循环/连锁再进入
+  if(score>best) best=score;
+  logRow('died', msg+' —— 已定格，点「▶ 开始新一局」继续');
+  draw(); ui();
+  btnStart.style.display='';
+}
+function placeFood(){
+  do{ food=[Math.floor(Math.random()*GW),Math.floor(Math.random()*GH)]; }
+  while(snake.some(s=>s[0]===food[0]&&s[1]===food[1]));
+}
+
+async function api(path,body){
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),4000);
+  try{ const r=await fetch(BRIDGE+path, body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal}:{signal:ctl.signal});
+    return await r.json();
+  } finally{ clearTimeout(to); }
+}
+async function probe(){
+  try{ const j=await api('/health'); bridgeOK=!!j.ok;
+    const name=j.default||'model', info=(j.models&&j.models[name])||{};
+    setEng(bridgeOK?'ok':'bad', bridgeOK?('真实 Laya ✓ '+(info.model||'')):'服务离线 · 重启 laya_bridge.py');
+    const sel=document.getElementById('selModel');
+    const names=Object.keys((j.models||{})).filter(n=>n!=='v3');  // v3 网格版吃的是 0123 矩阵输入，本页只发坐标，过滤掉
+    if(j.models&&sel.childElementCount!==names.length){
+      sel.innerHTML=names.map(n=>`<option value="${n}">${n}·${j.models[n].model}·${j.models[n].warm_ms}ms</option>`).join('');
+      if(!curModel) sel.value=(names.includes('v5')?'v5':j.default); curModel=sel.value;}
+  }catch(e){ bridgeOK=false; setEng('bad','服务离线 · 重启 laya_bridge.py'); }
+}
+let curModel=null;
+document.getElementById('selModel').onchange=e=>{ curModel=e.target.value; logRow('forced',`── 切换模型 → ${curModel}，重开一局 ──`); reset(); };
+function setEng(cls,txt){ const el=document.getElementById('engine'); el.className=cls; el.textContent=txt; }
+
+async function step(){
+  if(pend||dead) return; pend=true;
+  const g=gameGen;
+  const cands=decide(); lastCands=cands;
+  if(cands.every(c=>!c.safe)){ die(`#${dec} 无路可走（四个方向全是死路），本局结束：${score} 分`); return; }
+  const h=snake[0];
+  const req={model:curModel||undefined,state:{game:'snake',board:`${GW}x${GH}`,head:[h[0],h[1]],body:snake.map(s=>[...s]),food:[...food],facing:dir.n},criteria:critOf(cands)};
+  showPayload(req);
+  let j=null;
+  try{ j=await api('/decide',req); }catch(e){ bridgeOK=false; setEng('bad','服务离线 · 重启 laya_bridge.py'); }
+  if(gameGen!==g){ pend=false; return; }   // 等响应期间已重开：丢弃这一帧的过期决策
+  if(!j||j.error||!j.choice){ logRow('died','桥接断开,等待重连…'); pend=false; return; }
+  if(bridgeOK===false){ bridgeOK=true; }
+  dec++; msSum+=j.ms; lastProb=j.probabilities; lastChoice=j.choice; lastMs=j.ms;
+  snap();   // 回退栈条目 = 这一步的局面 + 模型在这一步刚给出的决策
+  const c=cands.find(x=>x.n===j.choice);
+  draw(); ui();
+  if(!c||!c.safe){ die(`#${dec} "${j.choice}"(${cn(j.choice)}) 模型选了死路 → 撞了，本局结束：${score} 分`); return; }
+  dir=DIRS.find(d=>d.n===j.choice);
+  const nh=[h[0]+dir.x,h[1]+dir.y];
+  snake.unshift(nh);
+  if(nh[0]===food[0]&&nh[1]===food[1]){
+    score++; logRow('food',`#${dec} "${j.choice}"(${cn(j.choice)}) ${(j.probabilities[j.choice]*100).toFixed(0)}% ${j.ms.toFixed(0)}ms  🎉 吃到!  ${score} 分`);
+    placeFood();
+  }else{
+    snake.pop();
+    logRow('move',`#${dec} "${j.choice}"(${cn(j.choice)}) ${(j.probabilities[j.choice]*100).toFixed(0)}% ${j.ms.toFixed(0)}ms`);
+  }
+  draw(); ui();
+  pend=false;
+  // 追一步：若模型延迟已超过节奏间隔，立刻接上下一步，避免被间隔取整拖慢
+  const pace=+document.getElementById('speed').value;
+  if(bridgeOK&&!manual&&!paused&&!oneShot&&!dead&&lastMs>pace) setTimeout(step,0);
+}
+
+function manualMove(nd){
+  if(dead) return; snap();
+  // 键盘接管一步：也记录当前模型意见做对照（不发请求）
+  dir=nd; const h=snake[0];
+  const nh=[h[0]+dir.x,h[1]+dir.y];
+  if(!isSafe(nh[0],nh[1],snake.slice(0,-1))){ die(`#${dec+1} [人工] "${nd.n}"(${cn(nd.n)}) 撞了，本局结束：${score} 分`); return; }
+  snake.unshift(nh);
+  if(nh[0]===food[0]&&nh[1]===food[1]){ score++; placeFood(); } else snake.pop();
+  logRow('forced',`#${++dec} [人工] "${dir.n}"(${cn(dir.n)})`);
+  draw(); ui();
+}
+
+let loopTimer=null;
+function tick(){ if(!manual&&!paused&&!oneShot&&bridgeOK) step(); }
+function setLoop(){ clearInterval(loopTimer); loopTimer=setInterval(tick, +document.getElementById('speed').value); }
+
+function draw(){
+  g.fillStyle='#0d0d20'; g.fillRect(0,0,cv.width,cv.height);
+  g.strokeStyle='#1a1a30'; g.lineWidth=.5;
+  for(let i=0;i<=GW;i++){ g.beginPath(); g.moveTo(i*CS+1,.5); g.lineTo(i*CS+1,GH*CS+1.5); g.stroke(); }
+  for(let j=0;j<=GH;j++){ g.beginPath(); g.moveTo(.5,j*CS+1); g.lineTo(GW*CS+1.5,j*CS+1); g.stroke(); }
+  g.fillStyle='#ff5252'; g.shadowColor='#ff5252'; g.shadowBlur=10;
+  g.beginPath(); g.arc(food[0]*CS+CS/2+1,food[1]*CS+CS/2+1,CS/3,0,7); g.fill(); g.shadowBlur=0;
+  snake.forEach((s,i)=>{
+    g.fillStyle=i===0?'#00e676':`hsl(${150-i*2},80%,${Math.max(30,58-i*2)}%)`;
+    g.fillRect(s[0]*CS+2.5,s[1]*CS+2.5,CS-3,CS-3);
+  });
+  if(dead){
+    g.fillStyle='rgba(0,0,0,.62)'; g.fillRect(0,0,cv.width,cv.height);
+    g.textAlign='center';
+    g.fillStyle='#ff5252'; g.font='bold '+Math.round(CS*.85)+'px sans-serif';
+    g.fillText('💀 已定格', cv.width/2, cv.height/2-6);
+    g.fillStyle='#bbb'; g.font=Math.round(CS*.42)+'px sans-serif';
+    g.fillText('点「▶ 开始新一局」继续', cv.width/2, cv.height/2+CS*.62);
+    g.textAlign='left';
+  }
+}
+function ui(){
+  stScore.textContent=score; stLen.textContent=snake.length; stDec.textContent=dec;
+  stMs.textContent=dec?(msSum/dec).toFixed(0):'—'; stBest.textContent=best;
+  // 概率条
+  const box=document.getElementById('opts'); box.innerHTML='';
+  const order=['UP','DOWN','LEFT','RIGHT'].filter(n=>lastCands.some(c=>c.n===n));
+  for(const n of order){
+    const c=lastCands.find(x=>x.n===n), p=(lastProb&&lastProb[n])||0, picked=lastChoice===n;
+    const blk=c&&!c.safe;
+    const div=document.createElement('div');
+    div.className='opt'+(picked?' pick':'')+(blk?' dead blocked':'');
+    div.innerHTML=`<span class="name">${n} ${cn(n)}${picked?' ◀':''}</span>
+      <span class="barwrap"><span class="bar" style="background:${COL[n]}${picked?'':'aa'};width:${(p*100).toFixed(1)}%"></span></span>
+      <span class="pct">${(p*100).toFixed(1)}%</span>
+      <span class="params">${c===undefined?'':
+        `<span class="pg fdT"><em>foodDist</em><b>${c.fd}</b></span><span class="pg spT"><em>space</em><b>${c.sp}</b></span><span class="pg dzT"><em>距死路</em><b>${c.run}</b></span>`}</span>`;
+    box.appendChild(div);
+  }
+  mChoice.textContent=lastChoice?`"${lastChoice}" ${cn(lastChoice)}`:'…';
+  mConf.textContent=lastProb&&lastChoice?(lastProb[lastChoice]*100).toFixed(1)+'%':'—';
+  mMs.textContent=lastMs!=null?lastMs.toFixed(0):'—';
+  deathLine.textContent=dead?deathMsg:'';
+}
+function logRow(cls,txt){
+  log.unshift({cls,txt}); if(log.length>40) log.pop();
+  const el=document.createElement('div'); el.className='r-'+cls; el.textContent=txt;
+  const list=document.getElementById('logList'); list.prepend(el);
+  while(list.children.length>28) list.lastChild.remove();
+}
+function showPayload(p){
+  const s=JSON.stringify(p,null,1)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/"([^"]+)":/g,'"<span class="k">$1</span>":')
+    .replace(/: "([^"]*)"/g,': "<span class="s">$1</span>"')
+    .replace(/: (-?\d+(\.\d+)?)/g,': <span class="n">$1</span>');
+  document.getElementById('payload').innerHTML=s;
+}
+
+// 控件
+btnDrive.onclick=()=>{ manual=!manual; btnDrive.classList.toggle('on',!manual); btnDrive.textContent= manual?'人工驾驶中（按 ↑ 切回 AI）':'AI 驾驶（真实模型）'; };
+btnPause.onclick=()=>{ paused=!paused; btnPause.textContent=paused?'▶ 继续':'⏸ 暂停'; btnPause.classList.toggle('on',paused); };
+btnStep.onclick=()=>{ oneShot=false; paused=true; btnPause.textContent='▶ 继续'; step(); };
+btnReset.onclick=()=>{ reset(); };
+btnStart.onclick=()=>{ reset(); };
+btnBack.onclick=()=>{
+  if(history.length<2) return;
+  gameGen++;                       // 丢弃仍在途的过期决策
+  history.pop();                   // 丢掉屏上这帧
+  const s=history[history.length-1];
+  snake=s.snake.map(a=>[...a]); food=[...s.food]; dir=DIRS.find(d=>d.n===s.dir);
+  score=s.score; dec=s.dec; lastCands=s.lc; lastProb=s.lp; lastChoice=s.lch; lastMs=s.lm;
+  dead=false; deathMsg=''; btnStart.style.display='none';
+  paused=true; btnPause.textContent='▶ 继续'; btnPause.classList.add('on');
+  pend=false;
+  logRow('forced',`⏪ 回退到第 ${dec} 步的决策（已暂停，点「单步 ▸」可原样重放）`);
+  draw(); ui();
+};
+speed.oninput=()=>{ spd.textContent=speed.value+'ms/步'; setLoop(); };
+
+addEventListener('keydown',e=>{
+  const map={ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT'};
+  if(map[e.key]){
+    e.preventDefault();
+    const nd=DIRS.find(d=>d.n===map[e.key]);
+    if(nd.n===dir.n||nd.n===DIRS.find(x=>x.n===dir.n).n) return;
+    if(nd.x===-dir.x&&nd.y===-dir.y) return; // 不许掉头
+    manual=true; btnDrive.classList.remove('on'); btnDrive.textContent='人工驾驶中（按 ↑ 切回 AI）';
+    manualMove(nd);
+  }
+  else if(e.key===' '){ e.preventDefault(); btnPause.onclick(); }
+  else if(e.key==='z'||e.key==='Z'){ btnBack.onclick(); }
+});
+
+reset(); probe(); setInterval(probe,5000); setLoop();
+logRow('forced','观察台就绪：每一步蛇的动作都来自显卡上 421M 真实权重的 softmax');
+</script>
+</body>
+</html>

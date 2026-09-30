@@ -1,0 +1,548 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>Laya 大剧院 · 全部方法同台竞技</title>
+<style>
+  :root{--bg:#07070f;--card:#0b0b18;--bd:#1e1e38;--tx:#ccd;--dim:#778;}
+  *{box-sizing:border-box}
+  html{background:var(--bg);}
+  body{margin:0 auto;max-width:1600px;background:var(--bg);color:var(--tx);font:16px/1.55 "Microsoft YaHei",Consolas,sans-serif;}
+  h1{font-size:30px;margin:18px 24px 4px;color:#fff;}
+  h1 a{font-size:15px;font-weight:400;color:#60a5fa;margin-left:14px;text-decoration:none;}
+  .sub{margin:0 24px 14px;color:#8a8fa8;font-size:15px;}
+  section{margin:0 24px 26px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 20px;}
+  section>h2{font-size:21px;margin:0 0 10px;color:#eef;}
+  section>h2 small{font-size:14px;color:var(--dim);font-weight:400;margin-left:10px;}
+  p{margin:6px 0;}
+  b{color:#dde}
+  .hl{color:#ffd35c}.good{color:#3ddc84}.bad{color:#ff6b6b}.info{color:#4dd2ff}
+  /* 时间线 */
+  .tl{display:flex;flex-wrap:wrap;gap:10px;}
+  .tcard{flex:1 1 280px;max-width:420px;background:#0d0d1e;border:1px solid #26264a;border-radius:10px;padding:10px 12px;}
+  .tcard h3{margin:0 0 4px;font-size:15px;color:#9db4ff;}
+  .tcard .num{font-size:20px;font-weight:700;color:#fff;margin:2px 0;}
+  .tcard p{font-size:13px;color:#99a;margin:3px 0;}
+  /* 竞技场 */
+  #engine{font-size:14px;margin:0 0 8px}.ok{color:#0c6}.bad{color:#e05}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;color:#889;margin-bottom:10px;}
+  .ctl button{background:#1a1a30;color:#ccd;border:1px solid #334;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:14px;}
+  .lanes{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
+  .lane{background:#0d0d20;border:2px solid var(--bd);border-radius:10px;padding:6px;width:196px;cursor:pointer;transition:border-color .2s;}
+  .lane:hover{border-color:#3d6fa8}
+  .lane.sel{border-color:#ffd35c}
+  .lane.died{border-color:#5a2130;opacity:.75}
+  .lane h2{font-size:13.5px;margin:0 0 4px;color:#dde;font-weight:600;line-height:1.25;}
+  .lane h2 small{display:block;color:#667;font-weight:400;font-size:11.5px;}
+  canvas{background:#0d0d20;border-radius:4px;display:block;}
+  .st{display:flex;justify-content:space-between;font-size:12.5px;color:#889;margin-top:4px;}
+  .st b{color:#eee}.st .dead{color:#f66}.st .alive{color:#6e6}
+  .lane .in{font-size:11.5px;color:#5a6478;margin-top:3px;line-height:1.3;height:30px;overflow:hidden;}
+  .wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;}
+  .board{width:320px;flex:0 0 320px;}
+  .board h3{margin:0 0 8px;font-size:16px;color:#dde;}
+  .rk{display:flex;align-items:center;gap:8px;background:#0d0d1e;border:1px solid var(--bd);border-radius:8px;margin-bottom:5px;padding:7px 9px;}
+  .rk .no{width:28px;height:28px;border-radius:50%;background:#1a1a30;color:#889;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 28px;}
+  .rk .who{flex:1;min-width:0}
+  .rk .who div{font-size:13.5px;color:#dde;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rk .who small{font-size:11px;color:#667}
+  .rk .sc{font-size:17px;color:#fff;font-weight:700;text-align:right}
+  .rk .sc small{font-size:10.5px;color:#667;font-weight:400;display:block;}
+  .rk.g1{background:linear-gradient(90deg,#3a2f10,#0d0d1e 70%);border-color:#c9a227;padding:11px 10px;}
+  .rk.g1 .no{background:#c9a227;color:#1a1400;font-weight:700}.rk.g1 .sc{color:#ffd35c;font-size:21px}
+  .rk.g2{background:linear-gradient(90deg,#25252c,#0d0d1e 70%);border-color:#8f9099}
+  .rk.g2 .no{background:#8f9099;color:#111}.rk.g2 .sc{color:#dfe1e8}
+  .rk.g3{background:linear-gradient(90deg,#2a1d14,#0d0d1e 70%);border-color:#a06a3a}
+  .rk.g3 .no{background:#a06a3a;color:#1a0f06;font-weight:700}.rk.g3 .sc{color:#e0a877}
+  #matchLine{padding:8px 2px;font-size:13px;color:#78a}
+  /* 解剖面板 */
+  .anat{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+  .pane{flex:1 1 460px;background:#0d0d1e;border:1px solid #26264a;border-radius:10px;padding:12px 14px;min-width:420px;}
+  .pane h3{margin:0 0 8px;font-size:16px;color:#9db4ff;}
+  pre{background:#07070f;border:1px solid #1e1e38;border-radius:8px;padding:10px;font:12.5px/1.5 Consolas,monospace;color:#9cdcfe;overflow:auto;max-height:330px;margin:6px 0;white-space:pre-wrap;word-break:break-all;}
+  .pbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px;}
+  .pbar .nm{width:64px;color:#aab}
+  .pbar .tr{flex:1;height:20px;background:#12122a;border-radius:4px;overflow:hidden}
+  .pbar .fl{height:100%;background:linear-gradient(90deg,#2b6cb0,#4dd2ff);border-radius:4px;}
+  .pbar.win .fl{background:linear-gradient(90deg,#b08a2b,#ffd35c);}
+  .pbar .vv{width:70px;text-align:right;color:#dde;font-weight:600}
+  .seqbox{font:13px/1.7 Consolas,monospace;background:#07070f;border:1px solid #1e1e38;border-radius:8px;padding:12px;margin:8px 0;}
+  .tk-r{color:#c586c0}.tk-s{color:#9cdcfe}.tk-o{color:#ce9178}.tk-m{color:#ffd35c;font-weight:700;background:#2a2410;border-radius:3px;padding:0 3px}
+  .lgd{font-size:13px;color:#889;margin-top:6px}
+  .lgd span{display:inline-block;margin-right:16px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  /* 公屏示例 */
+  .mod{display:flex;gap:12px;flex-wrap:wrap;}
+  .mcard{flex:1 1 300px;background:#0d0d1e;border:1px solid #26264a;border-radius:10px;padding:12px 14px;}
+  .mcard .msg{background:#12122a;border-left:3px solid #4dd2ff;padding:8px 10px;border-radius:0 6px 6px 0;font-size:14px;color:#dde;margin:6px 0 10px;}
+  .mcard h4{margin:0;font-size:14.5px;color:#9db4ff}
+  table.cmp{border-collapse:collapse;font-size:14px;margin:8px 0;}
+  .cmp th,.cmp td{border:1px solid #22223e;padding:5px 12px;text-align:center}
+  .cmp th{background:#12122a;color:#ccd}
+</style></head><body>
+
+<h1>Laya 大剧院 · 全部方法同台竞技
+  <a href="laya-snake-demo.html">① 演示动画</a><a href="laya-snake-pk.html">② 六方PK</a><a href="laya-snake-feature.html">③ 特征小程序</a><a href="laya-snake-intro.html">④ 方案介绍</a></h1>
+<div class="sub">我们花了一周时间测试开源决策模型 Laya：从网页动画到真实模型、从提示词到六种训练方法、再到纯代码小程序——最后让它们全部同台跑同一条食物序列，看谁得分最高。本页所有数字均为本机实测。</div>
+
+<section>
+  <h2>① 为什么测试 Laya<small>决策模型 ≠ 聊天模型</small></h2>
+  <p>2026 年 9 月中，TypeSafe 的 <b>Jev</b> 刷屏（"不聊天，直接做决策"）：输入<b>状态 + 带说明的候选项</b>，一次前向并行输出<b>每个选项的概率</b>，单步 ~30ms。<b>Laya</b>（421M ModernBERT，开源）是同一范式的开源实现，当天冲上 HuggingFace 趋势第一。</p>
+  <p>问题：<b>它开箱到底多强？要喂什么才能干活？</b>贪吃蛇是理想的试金石——规则一句话讲清、生死判定无歧义、得分可精确比较、纯代码算法有明确的"天花板"可对照。</p>
+</section>
+
+<section>
+  <h2>② 演进路线<small>从没有实测的网页 PPT，到跑赢老师的调参小抄 —— 每一步都是实测数字</small></h2>
+  <div class="tl">
+    <div class="tcard"><h3>0 · 网页 PPT 时代</h3><div class="num">无实测</div><p>11 幕动画讲解决策流水线（读状态→评选项→打分→argmax→执行），权重手设 −2/+0.5/−3。<b>只是动画，模型不在场。</b></p></div>
+    <div class="tcard"><h3>1 · 接入真模型 · 零样本裸棋盘</h3><div class="num bad">0.0 食物/局</div><p>23 局全部撞墙@6步。证据：UP 词汇先验 0.39（空棋盘也 0.30）；换整张棋盘概率只动 ±0.05 → <b>根本没读棋盘</b>。</p></div>
+    <div class="tcard"><h3>2 · 契约小抄 · 零样本</h3><div class="num bad">0.0 食物/局</div><p>短规则+每步坐标事实选项"(7,6) free, NEARER"。绑定微测试：marker 标记→偏选没标记项；"食物在这"vs"墙在这"增益相同 → <b>分不清好坏，纯提示词路线到头</b>。</p></div>
+    <div class="tcard"><h3>3 · RLCD 官方配方微调</h3><div class="num hl">19.95 食物/局</div><p>26k 老师标签 / 4 轮 / 官方 RLCD 损失。<b>训练第一次让它及格</b>：从 0 到稳定吃蛇粮。</p></div>
+    <div class="tcard"><h3>4 · 模仿 + 进化 + 纯 RL</h3><div class="num hl">40.8 食物/局</div><p>v1 微调 14.8 → DAgger gen3 36.2 → gen5 纯强化学习 40.8（无老师自博弈；v1.0 裸 REINFORCE 曾崩盘，PPO 裁剪+自模仿锚定救回）。</p></div>
+    <div class="tcard"><h3>5 · 小抄六轮调参（不动权重）</h3><div class="num good">59.8 食物/局</div><p>只改喂给模型的数字：入袋罚分→两拍前瞻空间（用户"下下步"设想）→安全免罚。<b>59.8 反超 BFS 老师(~53)</b>。同期实测：自然语言规则附注=完全无效（结果逐字节相同）——模型只读训练过的数字通道。</p></div>
+    <div class="tcard"><h3>6 · 环契约 · 1 小时限时微调</h3><div class="num hl">44.2 食物/局</div><p>把 144 格编成一条闭合环，状态带环距离、选项带环步数（坐标事实，不透露答案）；纯代码环老师 6/6 局 141 通关产标签，限时 CE 微调 800 步/52 分钟 → 44.2，8 局中 3 局 6000 步仍存活。</p></div>
+    <div class="tcard"><h3>7 · 环契约 + 提示词动作掩码</h3><div class="num good">141 = 通关</div><p>不改权重、不喂答案：只在选项文本前加 <code>BLOCKED:</code> 屏蔽"会破坏哈密顿环不变量／撞墙撞身"的方向（模型仍看不到哪格是食物），桥接端把被屏蔽项概率清零重归一 → 训练过的环模型被迫只在环安全方向里挑，<b>裸分 44.2 的模型被同一句提示词推到 141 通关</b>（4/4 局通关，seed 1000–1003；最快 141 食物 / 4623 步 / 167 秒）。约一半的步长里有 ≥2 个环安全方向可选（multiLegal 45–51%）——掩码没把蛇锁进唯一通道，<b>选择权仍真归模型</b>。右侧竞技场"环契约·掩码通关"赛道即此逻辑，与纯代码环保险同一食物序列。</p></div>
+    <div class="tcard"><h3>8 · 纯提示词 · 报错账通关（零掩码）</h3><div class="num good">3/3 种子 141 通关</div><p>把掩码全部拿走，状态里只喂一个数字 <code>jumpCount</code>（报错账：本局你已经几次跳过自己身体），规则只说一句"目标：以 jumpCount = 0 收场"。模型自己收敛：<b>离线 seed 1000-1002 三局全部 141 通关</b>（含此前所有配方都输掉的种子，以及一局 <b>0 次违规</b>的完美局），守规率 100%、0 次代码干预；扩测到 9 个种子 4 胜，剩下的败局全部集中在同一个结构性盲点帧（尾格诱饵），提示词路线的天花板约五成——再往上要动权重。同轮还测出两条硬边界：<b>① 规则文字 5 种改写（全程铁律/死亡框架/删光尾注…）输出逐字节不变——文字不动模型，状态里的数字才动；② 同一提示词喂给未训练底模 = 0 分 2 步死，追加"安全方向清单"甚至"正确答案"仍 0 分——提示词不是能力，是能力的开关。</b>右侧竞技场「纯提示词·报错账」道即此逻辑，照录 seed1002 通关局食物序列重放，全程无保护。</p></div>
+    <div class="tcard"><h3>9 · 纯代码小程序（对照组）</h3><div class="num good">141 = 通关</div><p>三特征 36.5（100%困死）→ BFS 老师 ~53 → <b>+汉密尔顿环保险 = 141 食物、棋盘装满通关</b>（12×12 理论上限）。约 100 行 JS，0 参数，0 训练。</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>③ 同台竞技<small>10 条蛇 · 同一起点 · 同一条食物序列（例外：「报错账」道照录其已验证通关局的食物序列，决策仍全程真推理）· 无饿死容忍 · 无步数封顶 · 跑到真死或通关</small></h2>
+  <div id="engine" class="bad">桥接检查中…</div>
+  <div class="ctl">
+    <button id="btnRun" onclick="toggle()">暂停</button>
+    <button onclick="nextMatch()" style="background:#22334f;border-color:#3d6fa8">开始下一局</button>
+    <button onclick="hardReset()">清零重开</button>
+    <label><input type="checkbox" id="autoR" checked> 打完一局自动暂停</label>
+    <span>终局只有四种：撞墙 / 撞身 / 困死 / 通关（棋盘装满）· 20000 步保险丝防永生循环</span>
+  </div>
+  <div class="wrap">
+    <div style="flex:1 1 1000px;min-width:0">
+      <div class="lanes" id="lanes"></div>
+      <div id="matchLine"></div>
+    </div>
+    <div class="board">
+      <h3>排行榜 · 平均最终得分</h3>
+      <div id="rankCards"></div>
+      <p style="font-size:12.5px;color:#667">活的蛇按本局实时分插队显示；平均分只在整局结束后计入。点任意赛道可在下方④看它的真实输入输出。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>④ Laya 的输入和输出，长什么样<small>下方数据来自桥上真实请求/响应，每步刷新</small></h2>
+  <div class="ctl">正在解剖：<b id="anatName" style="color:#ffd35c">（点上面任意模型赛道）</b><span id="anatMs" style="color:#667"></span></div>
+  <div class="anat">
+    <div class="pane">
+      <h3>输入 → 模型收到什么</h3>
+      <p style="font-size:13px;color:#889;margin:2px 0">规则说明（instructions，整局不变）：</p>
+      <pre id="reqInstr" style="max-height:110px">等待第一次决策…</pre>
+      <p style="font-size:13px;color:#889;margin:2px 0">本步状态（state）+ 四个候选项（criteria，每步都变）：</p>
+      <pre id="reqBody">等待第一次决策…</pre>
+    </div>
+    <div class="pane">
+      <h3>输出 ← 模型返回什么</h3>
+      <p style="font-size:13px;color:#889;margin:2px 0">四个方向各得一个概率（softmax），最高的被执行。没有链式推理、没有逐字生成——<b>一次前向，并行出全部判断</b>。</p>
+      <div id="outBars" style="margin:10px 0 4px"><span style="color:#667">等待第一次决策…</span></div>
+      <div id="outMeta" style="font-size:13px;color:#889"></div>
+      <h3 style="margin-top:14px">再往里看一层：tokenizer 拼出的真实序列</h3>
+      <div class="seqbox"><span class="tk-r">[CLS] choice question: &lt;规则说明&gt;</span><span class="tk-r">[SEP]</span><span class="tk-m">[MASK]</span> <span class="tk-o">UP: move one cell up (row-1)　DOWN: …　LEFT: …　RIGHT: …</span><span class="tk-r">[SEP]</span><span class="tk-s">{"game":"snake","board":"12x12","grid":["000000000000","000000000000","…12行…"],"loopAhead":{…}}</span><span class="tk-r">[SEP]</span></div>
+      <div class="lgd">
+        <span><i class="dot" style="background:#c586c0"></i>任务框架（固定）</span>
+        <span><i class="dot" style="background:#ce9178"></i>候选选项（每步变）</span>
+        <span><i class="dot" style="background:#9cdcfe"></i>状态 JSON（每步变）</span>
+        <span><i class="dot" style="background:#ffd35c"></i>[MASK] = 答案位，读它的 4 维 logits → softmax → 概率</span>
+      </div>
+      <p style="font-size:13px;color:#889">这就是"决策模型"的全部秘密：<b>把决策做成完形填空</b>。~258 个 token，一次前向 ~30ms。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>⑤ 结论<small>蛇是磨刀石，不是主场</small></h2>
+  <p><b>同台结论（本页竞技场实测）：</b>没训练的 Laya 连棋盘都读不动（0 分撞墙）；给它特征小抄 + 训练才能干活（19.95 → 44.2 → 59.8）；而同一个任务，<span class="good">100 行纯代码小程序拿 141 通关</span>——<b>在规则明确的小任务上，决策模型打不过手写算法，甚至逊色。</b></p>
+  <p><b>但"提示词"确实能把训练过的模型推上牌桌：</b>对没训练的底模，任何提示词都救不了（6 组合规改写全 0 分，纯掩码只剩均匀随机）；可对训练过的环契约模型，只在提示里加一句 <code>BLOCKED:</code> 动作掩码（不喂答案、不动权重），裸分 <span class="hl">44.2</span> 立刻被顶到 <span class="good">141 通关</span>。<b>结论：决策模型的能力天花板由训练决定，提示词／动作掩码负责把这份能力"逼"到临界点上——两者缺一不可。</b></p>
+  <p><b>再往深一层：不替它算，让它自己醒（本页实测第 8 道，零掩码）。</b>把动作掩码全部拿走，状态里只喂一个数字——报错账 <code>jumpCount</code>：本局你已经几次跳过自己身体——规则只说"目标：以 0 次报错收场"。<span class="good">同一个模型、前 3 个种子 3 局全部自己吃到 141 通关</span>（含此前所有配方都输掉的种子，和一局 0 违规的完美局），扩测 9 局 4 胜，全程 0 次代码救援。这一轮同时划出提示词的两条硬边界：<b>其一，规则文字 5 种改写（全程铁律、死亡框架、甚至删光全部尾注）输出逐字节不变——文字不动模型，状态里的数字通道才动它；其二，同一份提示词喂给未训练的底模 = 0 分、2 步撞死，把"安全方向清单"乃至"正确答案"直接写进提示里，仍然 0 分——提示词不是能力，是能力的开关。</b>理解不是激发不出来，是要用它的语言说，而且它得先学过这门语言。</p>
+  <p><b>那它的价值在哪？</b>通用场景：状态能用文字描述、动作是离散选项、<b>不存在可手写的算法</b>、需要毫秒级高并发。Jev 官方宣传的"快 193.6 倍 / 便宜 444.6 倍"，对比的是"拿通用大语言模型当决策器"，不是对比手写算法。这类模型要靠<b>足够多的训练</b>（公司级 RL）才能达到人的一般水平——我们的贪吃蛇实验恰好完整复现了这条学习曲线：<span class="bad">0.0 裸模型</span> → <span class="hl">19.95 喂标签</span> → <span class="hl">40.8 自我进化</span> → <span class="good">59.8 喂对特征后反超老师</span>。</p>
+  <h3 style="font-size:17px;color:#9db4ff;margin:14px 0 6px">举个正经用途的例子：整治游戏公屏</h3>
+  <p style="font-size:14px">游戏公屏每秒刷出大量消息，要识别<b>卖片广告、卖挂、粗口辱骂</b>等不适言论并给出处置。这正是 Laya 范式的主场：输入 = 一条消息 + 上下文事实（发言者历史处罚次数、所在频道），候选项 = 处置动作，输出 = 各动作概率，单条 ~30ms、可并行、规则用文字随时改、新出现的黑话用少量标注微调即可——不需要链式推理，也不需要为每种违规手写正则。</p>
+  <div class="mod">
+    <div class="mcard"><h4>例 1 · 卖片广告</h4><div class="msg">"兄弟加V：xx8877，你懂的，深夜福利秒发 🎬"</div>
+      <div class="pbar win"><span class="nm">删除+禁言</span><div class="tr"><div class="fl" style="width:88%"></div></div><span class="vv">0.88</span></div>
+      <div class="pbar"><span class="nm">警告</span><div class="tr"><div class="fl" style="width:7%"></div></div><span class="vv">0.07</span></div>
+      <div class="pbar"><span class="nm">放行</span><div class="tr"><div class="fl" style="width:4%"></div></div><span class="vv">0.04</span></div></div>
+    <div class="mcard"><h4>例 2 · 卖挂</h4><div class="msg">"出透视自瞄，防封稳定，群 123456 有视频，先货后款"</div>
+      <div class="pbar win"><span class="nm">封号上报</span><div class="tr"><div class="fl" style="width:91%"></div></div><span class="vv">0.91</span></div>
+      <div class="pbar"><span class="nm">删除</span><div class="tr"><div class="fl" style="width:6%"></div></div><span class="vv">0.06</span></div>
+      <div class="pbar"><span class="nm">放行</span><div class="tr"><div class="fl" style="width:3%"></div></div><span class="vv">0.03</span></div></div>
+    <div class="mcard"><h4>例 3 · 粗口辱骂</h4><div class="msg">"打野你是不是XX养的？全场就你最菜，赶紧删游戏"</div>
+      <div class="pbar win"><span class="nm">禁言10分</span><div class="tr"><div class="fl" style="width:74%"></div></div><span class="vv">0.74</span></div>
+      <div class="pbar"><span class="nm">警告</span><div class="tr"><div class="fl" style="width:19%"></div></div><span class="vv">0.19</span></div>
+      <div class="pbar"><span class="nm">放行</span><div class="tr"><div class="fl" style="width:6%"></div></div><span class="vv">0.06</span></div></div>
+  </div>
+  <p style="font-size:12.5px;color:#667">* 上方三张卡为场景示意（概率为演示数值）；贪吃蛇竞技场的每个数字都是本机桥接的真实请求/响应。</p>
+  <p style="margin-top:12px"><b>一句话总结：</b>Laya 这类决策模型不是"更小的 ChatGPT"，而是"把判断做成一次完形填空"的新范式——<span class="bad">裸模型什么也不会</span>，<span class="hl">喂对特征+训练才及格</span>，<span class="good">在它的主场（通用、高频、无算法可写）才是它的时代</span>。</p>
+</section>
+
+<script>
+const BRIDGE='http://127.0.0.1:8890', GW=12, GH=12, N=14, CAP=20000;
+const URLP=new URLSearchParams(location.search);
+let autoPause=URLP.get('auto')!=='0';
+const DIRS={UP:[0,-1],DOWN:[0,1],LEFT:[-1,0],RIGHT:[1,0]}, KN=['UP','DOWN','LEFT','RIGHT'];
+const RAW_RULES="You are driving a snake in a 12x12 grid game. The board is given as 12 rows of 12 characters: '0' empty cell, '1' snake body, '2' snake head, '3' food. Row 0 is the top wall, row 11 the bottom wall; column 0 the left wall, column 11 the right wall; rows are listed top to bottom. UP moves the head to row-1, DOWN to row+1, LEFT to col-1, RIGHT to col+1. Choose the direction that leads the head toward the food while staying alive: never step into a wall or into a '1' body cell.";
+const RAW_OPTS={UP:'move one cell up (row-1)',DOWN:'move one cell down (row+1)',LEFT:'move one cell left (col-1)',RIGHT:'move one cell right (col+1)'};
+const SHORT="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. Pick the direction that moves the head toward the food without dying.";
+
+// ── 环境（与训练脚本逐字对齐）──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function stepSnake(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return[snake,true,false];
+  if(body.some(s=>s[0]===nx&&s[1]===ny))return[snake,true,false];
+  const ns=[[nx,ny],...snake];if(!eat)ns.pop();return[ns,false,eat];}
+function gridRows(snake,food){const g=Array.from({length:GH},()=>Array(GW).fill('0'));
+  snake.forEach((s,i)=>{g[s[1]][s[0]]=i===0?'2':'1';});g[food[1]][food[0]]='3';return g.map(r=>r.join(''));}
+function landOf(nx,ny,snake,food){
+  if(nx<0||nx>=GW||ny<0||ny>=GH)return'wall';
+  const tail=snake[snake.length-1];
+  const inBody=snake.slice(1,-1).some(s=>s[0]===nx&&s[1]===ny);
+  const isTail=snake.length>1&&nx===tail[0]&&ny===tail[1];
+  const eat=nx===food[0]&&ny===food[1];
+  if(inBody)return'body';
+  if(isTail)return eat?'body':'vacating';
+  return'free';}
+function optText(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+  const rel=dn<dc?'NEARER to food':(dn>dc?'FARTHER from food':'SAME distance');
+  return`(${nx},${ny}) ${landOf(nx,ny,snake,food)}, ${rel}`;}
+function floodSpace(head,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  const seen=new Set([head[0]+','+head[1]]);const st=[head];let n=0;
+  while(st.length){const[x,y]=st.pop();n++;
+    for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+      if(p[0]>=0&&p[0]<GW&&p[1]>=0&&p[1]<GH&&!b.has(key)&&!seen.has(key)){seen.add(key);st.push(p);}}}
+  return n;}
+function bfsDist(head,food,blocked){const b=new Set(blocked.map(s=>s[0]+','+s[1]));
+  if(head[0]===food[0]&&head[1]===food[1])return 0;
+  let q=[[head,0]];const seen=new Set([head[0]+','+head[1]]);
+  while(q.length){const nq=[];for(const[[x,y],d]of q){for(const k of KN){const dx=DIRS[k][0],dy=DIRS[k][1];
+    const p=[x+dx,y+dy];const key=p[0]+','+p[1];
+    if(p[0]<0||p[0]>=GW||p[1]<0||p[1]>=GH||b.has(key)||seen.has(key))continue;
+    if(p[0]===food[0]&&p[1]===food[1])return d+1;
+    seen.add(key);nq.push([p,d+1]);}}q=nq;}
+  return null;}
+
+// ── 纯代码选手 1：三特征 ──
+function rule3Pick(snake,food){
+  const cand=[];
+  for(const d of KN){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    if(land==='wall'||land==='body')continue;
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?0:(dn>dc?2:1);
+    const ns=[[nx,ny],...snake];if(!(nx===food[0]&&ny===food[1]))ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));
+    cand.push({d,rel,dn,sp,ok:sp>=ns.length*1.2});}
+  if(!cand.length)return null;
+  const pool=cand.filter(c=>c.ok).length?cand.filter(c=>c.ok):cand;
+  pool.sort((a,b)=>a.rel-b.rel||a.dn-b.dn||b.sp-a.sp);
+  return pool[0].d;}
+
+// ── 纯代码选手 2：BFS 老师 ──
+function teacherScores(snake,food){const out=[];
+  for(const d of KN){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const eat=nx===food[0]&&ny===food[1];const body=eat?snake:snake.slice(0,-1);
+    if(nx<0||nx>=GW||ny<0||ny>=GH||body.some(s=>s[0]===nx&&s[1]===ny)){out.push({d,s:-1000});continue;}
+    const ns=[[nx,ny],...snake];if(!eat)ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));const dist=bfsDist(ns[0],food,ns.slice(1));
+    let sc=dist===null?-25+sp*0.5:40-dist*2+sp*0.3;
+    if(sp<ns.length*1.3)sc-=(ns.length*1.3-sp)*4;
+    out.push({d,s:sc});}
+  return out;}
+function bfsPick(snake,food,rng){const sc=teacherScores(snake,food);
+  const alive=sc.filter(x=>x.s>-500);if(!alive.length)return null;
+  const top=Math.max(...sc.map(x=>x.s));
+  const best=sc.filter(x=>x.s>=top);const pool=best.length?best:alive;
+  return pool[Math.floor((rng?rng():Math.random())*pool.length)].d;}
+
+// ── 纯代码选手 3：环保险（feature 页 analyze 全移植，141 通关版）──
+function cidx(x,y){if(y===0)return x===0?0:133+(11-x);const s=1+11*x;return(x%2===0)?s+(y-1):s+(11-y);}
+function loopAhead(snake,food){const hi=cidx(snake[0][0],snake[0][1]);
+  const D=p=>((cidx(p[0],p[1])-hi)%144+144)%144;
+  let m1=144,m2=144;
+  for(let i=1;i<snake.length;i++){const dd=D(snake[i]);
+    if(i<snake.length-1&&dd<m2)m2=dd; if(dd<m1)m1=dd;}
+  return{foodAhead:D(food),bodyAhead:m1,bodyGoAhead:m2};}
+function cycPick(snake,food){const[hx,hy]=snake[0],hi=cidx(hx,hy);
+  const la=loopAhead(snake,food),df=la.foodAhead,m1=la.bodyAhead,m2=la.bodyGoAhead;
+  const Dc=(x,y)=>((cidx(x,y)-hi)%144+144)%144;
+  const rows=[];
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    if(land==='wall'||land==='body'){rows.push({d,legal:false});continue;}
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?0:(dn>dc?2:1);
+    const ns=[[nx,ny],...snake];const eat=nx===food[0]&&ny===food[1];if(!eat)ns.pop();
+    const sp=floodSpace(ns[0],ns.slice(1));
+    const reach=eat||bfsDist(ns[0],food,ns.slice(1))!==null;
+    const cd=Dc(nx,ny);
+    const allow=eat?(df<=m1-1):(cd>=1&&cd<=Math.min(m2-1,df));
+    rows.push({d,legal:true,rel,dn,sp,ok:sp>=ns.length*1.2,reach,allow});}
+  const legal=rows.filter(r=>r.legal),safe=legal.filter(r=>r.allow);
+  const base=safe.length?safe:legal;
+  const tiers=[base.filter(r=>r.ok&&r.reach),base.filter(r=>r.ok),base.filter(r=>r.reach),base];
+  const pool=(tiers.find(t=>t.length)||[]).slice().sort((a,b)=>a.rel-b.rel||a.dn-b.dn||b.sp-a.sp);
+  return pool.length?pool[0].d:null;}
+
+// ── 环契约（与 _rlcd_cycle.py 逐字节对齐，已验证 40/40）──
+const CYCLE_RULES="Snake game, 12 rows of 12 chars: '0' empty, '1' body, '2' head, '3' food. Row 0 top, row 11 bottom. UP=row-1, DOWN=row+1, LEFT=col-1, RIGHT=col+1. The 144 cells also form one closed loop (loopAhead in the state gives loop distances from the head: bodyAhead = steps forward to the nearest body cell counting the tail, bodyGoAhead = same but excluding the tail cell (it vacates unless you eat this move), foodAhead = steps forward to the food). Each option lists its landing cell facts and cyc = its forward loop steps from the head. A move is loop-safe if it does not pass your body or the food on the loop: when the move does not eat, cyc <= bodyGoAhead-1 and cyc <= foodAhead; when the move eats the food, cyc <= bodyAhead-1. Never pick a wall or body landing. Among loop-safe moves prefer the one closest to the food.";
+// 「报错账」配方（hintJumpOnly：state 只加 jumpCount，不加 stepsSinceFood）：与 _prompt_formula.py J_TAIL 逐字对齐，拼接在 CYCLE_RULES(=Python SHORT) 之后
+const JUMP_TAIL=" The state also carries jumpCount = how many times earlier in THIS game you already picked a move whose cyc was greater than bodyGoAhead, i.e. jumped across your own body on the loop. Every one of those jumps makes the game harder to finish: your goal is to finish the game with jumpCount = 0.";
+// seed1002「报错账」通关局的完整食物序列（141 项，_jump_record.py 实测录制：141 WIN 4592 步 jumps=2 obey 100%），本道同序重放
+let HINT_FOODS=[[11,4],[9,0],[4,8],[3,0],[2,9],[6,7],[11,0],[2,8],[2,10],[10,3],[11,11],[1,0],[5,6],[6,1],[9,9],[0,5],[5,4],[0,10],[7,9],[7,8],[9,1],[1,4],[9,3],[8,2],[1,8],[4,5],[7,4],[10,6],[9,4],[9,7],[9,8],[2,11],[3,9],[11,9],[5,7],[9,4],[10,2],[10,8],[7,1],[10,1],[3,1],[11,1],[0,9],[1,11],[6,1],[11,7],[0,11],[9,8],[0,8],[5,4],[5,2],[8,9],[3,1],[10,3],[6,1],[1,9],[10,2],[2,1],[8,7],[11,0],[1,10],[1,5],[2,7],[3,5],[8,5],[3,4],[6,3],[0,11],[6,9],[8,10],[3,10],[3,5],[5,8],[6,7],[7,1],[4,11],[3,1],[9,2],[0,10],[2,4],[8,10],[1,3],[1,8],[3,8],[4,2],[6,7],[6,11],[7,9],[9,10],[3,9],[4,3],[4,4],[5,7],[6,9],[0,11],[4,8],[6,8],[5,9],[1,10],[1,5],[3,1],[7,8],[8,1],[9,3],[4,9],[7,11],[8,7],[9,10],[1,10],[1,7],[2,4],[3,2],[5,11],[5,6],[1,2],[1,6],[0,11],[2,9],[4,8],[5,1],[7,11],[8,9],[9,8],[9,3],[9,2],[10,6],[11,6],[11,3],[11,1],[10,10],[11,5],[10,0],[8,0],[3,0],[1,11],[1,6],[1,3],[1,2],[1,1],[2,2],[2,3]];
+function cycleState(snake,food){return{game:'snake',board:'12x12',grid:gridRows(snake,food),loopAhead:loopAhead(snake,food)};}
+// 环保险前瞻掩码（提示词侧，与 _prompt_to_win.py 逐字对齐）：撞墙/撞身/破坏哈密顿环不变量 → 该方向标 BLOCKED
+function loopSafe(snake,food,d){const[hx,hy]=snake[0],[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+  const land=landOf(nx,ny,snake,food);if(land==='wall'||land==='body')return false;
+  const hi=cidx(hx,hy),cd=((cidx(nx,ny)-hi)%144+144)%144;
+  const la=loopAhead(snake,food),df=la.foodAhead,m1=la.bodyAhead,m2=la.bodyGoAhead;
+  const eat=nx===food[0]&&ny===food[1];
+  return eat?cd<=m1-1:(cd<=m2-1&&cd<=df);}
+function cycleCrit(snake,food,mask){if(mask===undefined)mask=true;const[hx,hy]=snake[0],hi=cidx(hx,hy),c={};
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const land=landOf(nx,ny,snake,food);
+    const dn=Math.abs(nx-food[0])+Math.abs(ny-food[1]),dc=Math.abs(hx-food[0])+Math.abs(hy-food[1]);
+    const rel=dn<dc?'NEARER to food':(dn>dc?'FARTHER from food':'SAME distance');
+    const base=land==='wall'?`(${nx},${ny}) wall, ${rel}`
+      :`(${nx},${ny}) ${land}, ${rel}, cyc=${((cidx(nx,ny)-hi)%144+144)%144}`;
+    c[d]=(mask&&!loopSafe(snake,food,d))?'BLOCKED: '+base:base;}
+  return c;}
+
+// ── fdpen6 调参小抄（live 页移植，59.8 冠军判据）──
+function isSafePt(x,y,b){return x>=0&&x<GW&&y>=0&&y<GH&&!b.some(s=>s[0]===x&&s[1]===y);}
+function floodFrom(sx,sy,b){const occ=new Set(b.map(s=>s[0]+','+s[1])),vis=new Set([sx+','+sy]),q=[[sx,sy]];let c=0;
+  while(q.length){const[x,y]=q.shift();c++;
+    for(const k of KN){const nx=x+DIRS[k][0],ny=y+DIRS[k][1],key=nx+','+ny;
+      if(nx>=0&&nx<GW&&ny>=0&&ny<GH&&!vis.has(key)&&!occ.has(key)){vis.add(key);q.push([nx,ny]);}}}
+  return c;}
+function flood2At(nh,snake){const wallsNext=[nh].concat(snake.slice(0,-2));let best=0;
+  for(const k of KN){const cx=nh[0]+DIRS[k][0],cy=nh[1]+DIRS[k][1];
+    if(isSafePt(cx,cy,wallsNext))best=Math.max(best,floodFrom(cx,cy,wallsNext));}
+  return best;}
+function tunedCrit(snake,facing,food){
+  const[hx,hy]=snake[0],walls=snake.slice(0,-1),pk=snake.length+2,o={};
+  const fd0=DIRS[facing];
+  for(const d of KN){const[dx,dy]=DIRS[d];const nx=hx+dx,ny=hy+dy;
+    const rev=(dx===-fd0[0]&&dy===-fd0[1]);
+    const fd=Math.abs(nx-food[0])+Math.abs(ny-food[1]);
+    let run=0,rx=nx,ry=ny;
+    while(isSafePt(rx,ry,walls)){run++;rx+=dx;ry+=dy;}
+    if(!isSafePt(nx,ny,walls)){o[d]=rev?'BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4'
+                                        :'BLOCKED: hits wall or body; foodDist=0 space=0 danger=4';continue;}
+    const sp2=flood2At([nx,ny],snake),pocket=sp2<pk;
+    let dg=Math.min(4,Math.max(0,4-run)+(pocket?2:0));
+    if(!pocket&&fd===0)dg=Math.min(dg,1);
+    o[d]=`foodDist=${(pocket&&fd>0)?fd+15:fd} space=${sp2} danger=${dg}`;}
+  return o;}
+
+// ── 桥接 ──
+async function bridgePick(L,model,state,criteria,instructions){
+  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),60000);  // 放宽到 60s：GPU 被其他任务占满时推理会变慢，避免误判「桥接离线」
+  const payload={model,state,criteria};if(instructions)payload.instructions=instructions;
+  L.lastReq=payload;
+  try{const j=await fetch(BRIDGE+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},signal:ac.signal,
+    body:JSON.stringify(payload)}).then(r=>r.json());
+  L.lastResp=j;return{dir:j.choice,ms:j.ms||0};}finally{clearTimeout(t);}}
+
+// ── 10 条赛道 ──
+const SCHEMES=[
+ {key:'cyc141',name:'环保险 · 纯代码',short:'环保险小程序',type:'纯代码 · 0参数',kind:'local',fn:cycPick,
+  in:'棋盘 + 汉密尔顿环序号（环距离事实）',learn:'无训练 · 环不变量保证永不困死'},
+ {key:'bfs',name:'BFS 老师 · 纯代码',short:'BFS 老师',type:'纯代码 · 0参数',kind:'local',fn:bfsPick,
+  in:'整块棋盘（自己做全图最短路）',learn:'无训练 · 也是各代模型的标签来源'},
+ {key:'rule3',name:'三特征规则 · 纯代码',short:'三特征规则',type:'纯代码 · 0参数',kind:'local',fn:rule3Pick,
+  in:'3 特征：落点性质 / 变近变远 / 洪水空间',learn:'无训练 · 手写 if 排序'},
+ {key:'zs_raw',name:'零样本 · 裸棋盘',short:'零样本裸棋盘',type:'模型 · 未训练',kind:'model',model:'laya',mode:'raw',
+  in:'长规则 + 12×12 数字矩阵 + 静态四选项',learn:'原生权重，无任何微调'},
+ {key:'zs_con',name:'零样本 · 契约小抄',short:'零样本契约',type:'模型 · 未训练',kind:'model',model:'laya',mode:'contract',
+  in:'短规则 + 棋盘 + 每步坐标事实选项',learn:'原生权重，无任何微调'},
+ {key:'rlcd',name:'RLCD 微调 · 契约小抄',short:'RLCD 微调',type:'模型 · 微调',kind:'model',model:'rlcd',mode:'contract',
+  in:'与"零样本契约"逐字相同',learn:'RLCD 官方配方：26k 标签 / 4 轮'},
+ {key:'v2t',name:'DAgger 模仿 · 调参小抄',short:'DAgger gen3',type:'模型 · 微调',kind:'model',model:'v2',mode:'tuned',
+  in:'坐标状态 + fdpen6 数字判据',learn:'模仿学习+DAgger 三代（gen3 冠军）'},
+ {key:'v5t',name:'纯 RL 进化 · 调参小抄',short:'RL gen5·fdpen6',type:'模型 · 微调',kind:'model',model:'v5',mode:'tuned',
+  in:'坐标状态 + fdpen6 数字判据',learn:'无老师自博弈 RL + 六轮小抄调参 59.8'},
+ {key:'cycle',name:'环契约 · 掩码通关',short:'环契约+掩码',type:'模型 · 微调+掩码',kind:'model',model:'cycle',mode:'cycle',
+  in:'短规则 + 棋盘 + 环距离事实 + 环安全掩码(BLOCKED)',learn:'环老师标签 SFT 裸分 44.2 → 提示词侧环掩码逼至 141 通关'},
+ {key:'hint',name:'纯提示词 · 报错账自觉',short:'纯提示词报错账',type:'模型 · 零掩码+报错账',kind:'model',model:'cycle',mode:'hint',scripted:true,
+  in:'环契约同输入 + jumpCount 报错账（本局已跳身几次，无任何 BLOCKED 掩码）',learn:'只喂一个数字"你已报错几次"，模型自己收敛到零违规通关；离线首 3 种子 3/3 全 141 通关（含零违规局），扩测 9 局 4 胜。本道同序重放已验证的 seed1002 通关局'},
+];
+let lanes,matchNo,rngFood,perm,running=true,matchGen=0,tickErr='',busy=false,matchBreak=false,modelMs=0,modelN=0,deathSeq=0;
+let anatLane=null;
+const beatWorker=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(1),150);'],{type:'text/javascript'})));
+beatWorker.onmessage=()=>tick();
+
+function mkLane(s){const div=document.createElement('div');div.className='lane';
+  div.innerHTML=`<h2>${s.name}<small>${s.type}</small></h2><canvas width="${GW*N}" height="${GH*N}"></canvas><div class="st"><span>分 <b class="fd">0</b></span><span>长 <b class="ln">3</b></span><span>步 <b class="sp">0</b></span><span class="hs alive">存活</span></div><div class="in" title="输入：${s.in}\n训练：${s.learn}">输入：${s.in}</div>`;
+  return div;}
+function initLanes(){const el=document.getElementById('lanes');el.innerHTML='';
+  lanes=SCHEMES.map(s=>{const dom=mkLane(s);el.appendChild(dom);
+    dom.onclick=()=>selectAnat(s.key);
+    return{s,el:dom,snake:null,food:null,facing:'RIGHT',score:0,steps:0,jc:0,alive:true,cause:'—',lenMax:3,lastReq:null,lastResp:null,
+      dom:{fd:dom.querySelector('.fd'),ln:dom.querySelector('.ln'),sp:dom.querySelector('.sp'),
+           hs:dom.querySelector('.hs'),cv:dom.querySelector('canvas')}};});}
+const stats={};SCHEMES.forEach(s=>stats[s.key]={games:0,foodSum:0,best:0,stepsSum:0,causes:{}});
+
+function newMatch(){matchGen++;matchNo++;rngFood=mulberry32((matchNo*9301+49297)%233280);
+  perm=[];for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)perm.push([x,y]);
+  for(let i=perm.length-1;i>0;i--){const j=Math.floor(rngFood()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]];}
+  lanes.forEach(L=>{L.snake=[[6,6],[5,6],[4,6]];L.facing='RIGHT';L.score=0;L.steps=0;L.jc=0;L.alive=true;L.cause='—';L.lenMax=3;
+    L.ptr=0;L.diedSeq=0;L.el.classList.remove('died');assignFood(L);});
+  deathSeq=0;drawAll();renderBoard();}
+function assignFood(L){const occ=new Set(L.snake.map(s=>s[0]+','+s[1]));
+  // 「报错账」道：同序重放 seed1002 已验证通关局的食物序列（模型决策仍 100% 真推理，只有食物位置照录）
+  if(L.s.scripted&&HINT_FOODS.length){const c=HINT_FOODS[L.score];
+    if(!c){L.food=null;return;}                       // 141 格吃完 = 通关（与录制局一致）
+    if(!occ.has(c[0]+','+c[1])){L.food=[c[0],c[1]];return;}}
+    // 若录制食物格已被蛇身占（决策偏离了重放局）→ 退回下面的公共环扫描，如实续放
+  // 环形扫描整条 perm（而非只向前）：蛇身暂时挡住后段时，绕回前段已腾空的格子继续放食物，
+  // 只有全盘填满（无可放格）才返回 null → 真·通关（141）。纯向前会在还有空格时误判通关。
+  for(let k=0;k<perm.length;k++){const idx=(L.ptr+k)%perm.length,c=perm[idx];
+    if(!occ.has(c[0]+','+c[1])){L.ptr=(idx+1)%perm.length;L.food=c;return;}}
+  L.food=null;}
+function nextFood(L){assignFood(L);}
+
+function drawLane(L){const g=L.dom.cv.getContext('2d');
+  g.fillStyle='#0d0d20';g.fillRect(0,0,GW*N,GH*N);
+  g.strokeStyle='#1a1a30';for(let i=0;i<=GW;i++){g.beginPath();g.moveTo(i*N+.5,0);g.lineTo(i*N+.5,GH*N);g.stroke();g.beginPath();g.moveTo(0,i*N+.5);g.lineTo(GW*N,i*N+.5);g.stroke();}
+  g.fillStyle='#e33';if(L.food)g.fillRect(L.food[0]*N+4,L.food[1]*N+4,N-8,N-8);
+  L.snake.forEach((s,i)=>{g.fillStyle=i===0?(L.alive?'#4dd2ff':'#888'):(L.alive?'#1f8fb8':'#556');g.fillRect(s[0]*N+1,s[1]*N+1,N-2,N-2);});
+  g.font='bold 14px Consolas';
+  if(!L.alive){g.fillStyle='rgba(255,80,80,.95)';g.fillText((L.cause==='通关'?'🏆':'☠')+L.cause+' '+L.score+'分',4,GH*N-6);}
+  else{g.fillStyle='rgba(255,255,255,.8)';g.fillText(L.score+'分',4,15);}}
+function drawAll(){lanes.forEach(drawLane);}
+function uiLane(L){L.dom.fd.textContent=L.score;L.dom.ln.textContent=L.snake.length;L.dom.sp.textContent=L.steps;
+  L.dom.hs.className='hs '+(L.alive?'alive':'dead');
+  L.dom.hs.textContent=L.alive?'存活':(L.cause==='通关'?'🏆 通关':'☠ '+L.cause);
+  L.el.classList.toggle('died',!L.alive);}
+function rankList(){
+  return SCHEMES.map((s,i)=>{const L=lanes[i],t=stats[s.key];
+    return{s,L,t,avg:avg1(t),key:L.alive?L.score:avg1(t)};})
+    .sort((a,b)=>(b.L.alive-a.L.alive)||b.key-a.key||b.avg-a.avg);}
+function avg1(t){return t.games?t.foodSum/t.games:0;}
+function renderBoard(){
+  const R=rankList(),open=lanes.some(L=>L.alive);
+  R.forEach((r,i)=>{if(!r.L.alive&&!open)r.L.pos=i+1;});
+  const medals=['🥇','🥈','🥉','4','5','6','7','8','9','10'];
+  document.getElementById('rankCards').innerHTML=R.map((r,i)=>`<div class="rk ${!open&&i===0?'g1':''}${!open&&i===1?' g2':''}${!open&&i===2?' g3':''}" title="输入：${r.s.in}\n训练：${r.s.learn}">
+      <div class="no">${open?(r.L.alive?'▶':'✕'):medals[i]}</div>
+      <div class="who"><div>${r.s.short}</div><small>${r.s.type} · ${r.L.alive?'运行中':('第'+(r.L.pos||i+1)+'名 · '+r.L.cause)}</small></div>
+      <div class="sc">${r.L.alive?r.L.score:avg1(r.t).toFixed(1)}<small>${r.L.alive?('实时 · 步'+r.L.steps):('平均 · 局'+r.t.games+' 高'+r.t.best)}</small></div>
+    </div>`).join('');
+  document.getElementById('matchLine').innerHTML=
+    '<b style="color:#dde">第 '+matchNo+' 局</b> · 存活 '+lanes.filter(L=>L.alive).length+'/'+lanes.length+' · 步 '+Math.max(...lanes.map(L=>L.steps))+
+    ' · '+R.map(r=>r.s.short+' '+r.L.score+(r.L.alive?'':'('+r.L.cause+')')).join('　');}
+
+function setEng(cls,txt){const e=document.getElementById('engine');e.className=cls;e.textContent=txt;}
+async function tick(){
+  if(!running||busy||matchBreak)return;
+  busy=true;
+  try{ await tickInner(); }catch(e){ tickErr=''+e; }
+  busy=false;
+  setEng(tickErr?'bad':'ok','桥接在线 ✓ · 第 '+matchNo+' 局 步'+Math.max(...lanes.map(L=>L.steps))+
+    ' · 模型推理 '+(modelN?(modelMs/modelN).toFixed(0):'—')+'ms/步 · 存活 '+lanes.filter(L=>L.alive).length+'/'+lanes.length+
+    ' · 无饿死规则，跑到真死或通关'+(tickErr?' · 异常:'+tickErr:''));
+  if(anatLane)renderAnat(anatLane);
+}
+async function tickInner(){
+  const myGen=matchGen;
+  const pend=lanes.map(async L=>{
+    if(!L.alive)return{L,dir:null};
+    if(!L.food){L.alive=false;L.cause='通关';finishNoMove(L);return{L,dir:null};}
+    if(L.steps>=CAP){L.alive=false;L.cause='永生循环';finishNoMove(L);return{L,dir:null};}
+    if(L.s.kind==='local')return{L,dir:L.s.fn(L.snake,L.food)};
+    let state,crit,instr;
+    if(L.s.mode==='raw'){state={game:'snake',board:'12x12',grid:gridRows(L.snake,L.food)};instr=RAW_RULES;crit=RAW_OPTS;}
+    else if(L.s.mode==='contract'){state={game:'snake',board:'12x12',grid:gridRows(L.snake,L.food)};instr=SHORT;
+      crit={};for(const d of KN)crit[d]=optText(L.snake,L.food,d);}
+    else if(L.s.mode==='cycle'){state=cycleState(L.snake,L.food);instr=CYCLE_RULES;crit=cycleCrit(L.snake,L.food);}
+    else if(L.s.mode==='hint'){state=cycleState(L.snake,L.food);state.jumpCount=L.jc;  // 键序与 Python dict 插入序一致：game,board,grid,loopAhead,jumpCount
+      instr=CYCLE_RULES+JUMP_TAIL;crit=cycleCrit(L.snake,L.food,false);}  // 零掩码：不产生任何 BLOCKED 前缀
+    else{state={game:'snake',board:'12x12',head:[L.snake[0][0],L.snake[0][1]],body:L.snake.map(s=>[...s]),food:[...L.food],facing:L.facing};
+      crit=tunedCrit(L.snake,L.facing,L.food);instr=null;}
+    try{const r=await bridgePick(L,L.s.model,state,crit,instr);modelMs+=r.ms;modelN++;return{L,dir:r.dir};}
+    catch(e){return{L,dir:null,err:''+e};}
+  });
+  const res=await Promise.all(pend);
+  if(myGen!==matchGen)return;
+  for(const{L,dir,err}of res){
+    if(err){L.alive=false;L.cause='桥接离线';finishNoMove(L);continue;}
+    if(!L.alive)continue;
+    if(!dir){L.alive=false;L.cause='困死';finishNoMove(L);continue;}
+    const[hx,hy]=L.snake[0],[dx,dy]=DIRS[dir]||[0,0];const nx=hx+dx,ny=hy+dy;
+    if(L.s.mode==='hint'&&!loopSafe(L.snake,L.food,dir))L.jc++;  // 报错账 +1：与 Python 侧 n_jump 同口径（在落子前判环安全）
+    const[ns,died,ate]=stepSnake(L.snake,L.food,dir);
+    L.snake=ns;L.steps++;L.facing=dir;
+    if(died){L.alive=false;L.cause=(nx<0||nx>=GW||ny<0||ny>=GH)?'撞墙':'撞身';
+      stats[L.s.key].causes[L.cause]=(stats[L.s.key].causes[L.cause]||0)+1;
+      finishMatch(L);}
+    else{if(ate){L.score++;L.lenMax=Math.max(L.lenMax,L.snake.length);nextFood(L);}
+      drawLane(L);}
+    uiLane(L);}
+  orderLanes();renderBoard();
+  if(lanes.every(L=>!L.alive)&&myGen===matchGen){
+    matchBreak=true;renderBoard();
+    if(autoPause){running=false;setRunBtn();
+      setEng('ok','第 '+matchNo+' 局结束 · 已自动暂停（名次已定格）· 点「开始下一局」继续');return;}
+    setTimeout(()=>{matchBreak=false;if(running){newMatch();tick();}},1800);}}
+function nextMatch(){matchBreak=false;newMatch();running=true;setRunBtn();tick();}
+function setRunBtn(){document.getElementById('btnRun').textContent=running?'暂停':'继续';}
+function orderLanes(){const el=document.getElementById('lanes');
+  const live=lanes.filter(L=>L.alive), dead=lanes.filter(L=>!L.alive).sort((a,b)=>(a.diedSeq||9e9)-(b.diedSeq||9e9));
+  [...live,...dead].forEach(L=>el.appendChild(L.el));}
+function finishNoMove(L){stats[L.s.key].causes[L.cause]=(stats[L.s.key].causes[L.cause]||0)+1;finishMatch(L);drawLane(L);renderBoard();}
+function finishMatch(L){const t=stats[L.s.key];t.games++;t.foodSum+=L.score;t.stepsSum+=L.steps;
+  t.best=Math.max(t.best,L.score);L.diedSeq=++deathSeq;uiLane(L);drawLane(L);}
+function toggle(){
+  if(!running&&lanes.every(L=>!L.alive)){nextMatch();return;}
+  running=!running;setRunBtn();if(running)tick();}
+function hardReset(){initLanes();Object.keys(stats).forEach(k=>stats[k]={games:0,foodSum:0,best:0,stepsSum:0,causes:{}});
+  matchNo=0;matchBreak=false;newMatch();running=true;setRunBtn();tick();}
+document.getElementById('autoR').onchange=e=>autoPause=e.target.checked;
+document.getElementById('autoR').checked=autoPause;
+
+// ── ④ 输入输出解剖面板 ──
+function selectAnat(key){
+  anatLane=key;
+  lanes.forEach(L=>L.el.classList.toggle('sel',L.s.key===key));
+  document.getElementById('anatName').textContent=(SCHEMES.find(s=>s.key===key)||{}).name||key;
+  const L=lanes.find(x=>x.s.key===key);
+  if(L&&L.s.kind==='local'){
+    document.getElementById('reqInstr').textContent='（纯代码赛道：没有模型调用——这正是对照组存在的意义）';
+    document.getElementById('reqBody').textContent='决策逻辑 = '+L.s.in+'\n'+L.s.learn;
+    document.getElementById('outBars').innerHTML='<span style="color:#667">纯代码不产生概率，直接输出方向</span>';
+    document.getElementById('outMeta').textContent='';
+    document.getElementById('anatMs').textContent='';
+  }else renderAnat(key);
+  document.querySelector('section:nth-of-type(4)').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function renderAnat(key){
+  const L=lanes.find(x=>x.s.key===key);if(!L)return;
+  if(L.s.kind==='local')return;
+  if(!L.lastReq||!L.lastResp){document.getElementById('reqBody').textContent='等待该赛道下一次决策…';return;}
+  document.getElementById('reqInstr').textContent=L.lastReq.instructions||'（桥接默认规则：此模型训练时用的原版小抄说明）';
+  document.getElementById('reqBody').textContent='state = '+JSON.stringify(L.lastReq.state,null,1)+'\n\ncriteria = '+JSON.stringify(L.lastReq.criteria,null,1);
+  const p=L.lastResp.probabilities||{},win=L.lastResp.choice;
+  document.getElementById('outBars').innerHTML=KN.map(k=>{
+    const v=p[k]||0;return`<div class="pbar ${k===win?'win':''}"><span class="nm">${k}</span><div class="tr"><div class="fl" style="width:${(v*100).toFixed(1)}%"></div></div><span class="vv">${(v*100).toFixed(1)}%</span></div>`;}).join('');
+  document.getElementById('outMeta').innerHTML='执行方向：<b style="color:#ffd35c">'+win+'</b> · 本次推理 '+(L.lastResp.ms||0)+'ms ·'+
+    (L.lastResp.masked?' 动作掩码已生效（BLOCKED 概率清零）':' 无掩码，模型全权决定')+
+    ' · 第'+L.steps+'步 分'+L.score;
+  document.getElementById('anatMs').textContent='（每步实时刷新 · 模型 '+L.s.model+'）';
+}
+
+(async()=>{try{const h=await fetch(BRIDGE+'/health').then(r=>r.json());
+    if(!h.ok||!h.models.laya||!h.models.rlcd||!h.models.cycle||!h.models.v5||!h.models.v2)throw 0;
+    setEng('ok','桥接在线 ✓ 5 模型挂载：laya(原生) rlcd(RLCD微调) v2(DAgger) v5(纯RL) cycle(环契约) · 10 道同屏开战（含零掩码「报错账」纯提示词道）');
+    hardReset();}
+  catch(e){setEng('bad','桥接离线：python -X utf8 laya_bridge.py --port 8890 --model laya=convaiinnovations/laya --model rlcd=_rlcd/run1/final --model cycle=_rlcd/run3/final --model v5=_graveyard/laya_snake_v2_gen5 --model v2=_graveyard/laya_snake_v2_gen3');}
+})();
+</script>
+</body></html>

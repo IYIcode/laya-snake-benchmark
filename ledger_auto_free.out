@@ -1,0 +1,150 @@
+--- ask 1 steps=0 score=0 jumps=0 | CHAIN 7 RIGHT,RIGHT,RIGHT,UP,UP,UP,RIGHT EATEN
+== step 1 dir=RIGHT head=(6,6) len=3 food=(10,3) | foodAhead=41 bodyAhead=122 bodyGoAhead=133 jumps=0
+   UP    (6,5) free, NEARER to food, cyc=143 | 不等式:FAIL(=跨身)
+   DOWN  (6,7) free, FARTHER from food, cyc=1 | 不等式:PASS
+   LEFT  (5,6) body, FARTHER from food, cyc=133 | 不等式:FAIL(=跨身)
+   RIGHT (7,6) free, NEARER to food, cyc=11 | 不等式:PASS<= 我选
+   >>> 本链终点：此手吃子，新食物 [11, 8]
+CHAIN 7 RIGHT,RIGHT,RIGHT,UP,UP,UP,RIGHT EATEN
+-- 计划尾部状态: steps=7 score=0 jumps=0 (未含本局早前账)
+ask 2 steps=7 score=1 jumps=0 chain=6 EATEN
+ask 3 steps=13 score=2 jumps=0 chain=18 EATEN
+ask 4 steps=31 score=3 jumps=0 chain=1 EATEN
+ask 5 steps=32 score=4 jumps=0 chain=31 EATEN
+ask 6 steps=63 score=5 jumps=0 chain=30 EATEN
+ask 7 steps=93 score=6 jumps=0 chain=8 EATEN
+ask 8 steps=101 score=7 jumps=0 chain=12 EATEN
+ask 9 steps=113 score=8 jumps=0 chain=41 EATEN
+ask 10 steps=154 score=9 jumps=0 chain=6 EATEN
+--- ask 11 steps=160 score=10 jumps=0 | CHAIN 11 RIGHT,RIGHT,RIGHT,RIGHT,RIGHT,RIGHT,RIGHT,DOWN,DOWN,DOWN,DOWN EATEN
+ask 12 steps=171 score=11 jumps=0 chain=39 EATEN
+ask 13 steps=210 score=12 jumps=0 chain=38 EATEN
+ask 14 steps=248 score=13 jumps=0 chain=9 EATEN
+ask 15 steps=257 score=14 jumps=0 chain=18 EATEN
+ask 16 steps=275 score=15 jumps=0 chain=3 EATEN
+ask 17 steps=278 score=16 jumps=0 chain=6 EATEN
+ask 18 steps=284 score=17 jumps=0 chain=33 EATEN
+ask 19 steps=317 score=18 jumps=0 chain=38 EATEN
+ask 20 steps=355 score=19 jumps=0 chain=9 EATEN
+--- ask 21 steps=364 score=20 jumps=0 | CHAIN 25 UP,UP,RIGHT,RIGHT,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN EATEN
+ask 22 steps=389 score=21 jumps=0 chain=9 EATEN
+ask 23 steps=398 score=22 jumps=0 chain=38 EATEN
+ask 24 steps=436 score=23 jumps=0 chain=10 EATEN
+ask 25 steps=446 score=24 jumps=0 chain=18 EATEN
+ask 26 steps=464 score=25 jumps=0 chain=4 EATEN
+ask 27 steps=468 score=26 jumps=0 chain=12 EATEN
+ask 28 steps=480 score=27 jumps=0 chain=26 EATEN
+ask 29 steps=506 score=28 jumps=0 chain=8 EATEN
+ask 30 steps=514 score=29 jumps=0 chain=2 EATEN
+--- ask 31 steps=516 score=30 jumps=0 | CHAIN 3 RIGHT,RIGHT,UP EATEN
+ask 32 steps=519 score=31 jumps=0 chain=29 EATEN
+ask 33 steps=548 score=32 jumps=0 chain=6 EATEN
+ask 34 steps=554 score=33 jumps=0 chain=11 EATEN
+ask 35 steps=565 score=34 jumps=0 chain=4 EATEN
+ask 36 steps=569 score=35 jumps=0 chain=23 EATEN
+ask 37 steps=592 score=36 jumps=0 chain=7 EATEN
+ask 38 steps=599 score=37 jumps=0 chain=4 EATEN
+ask 39 steps=603 score=38 jumps=0 chain=6 EATEN
+ask 40 steps=609 score=39 jumps=0 chain=3 EATEN
+--- ask 41 steps=612 score=40 jumps=0 | CHAIN 5 RIGHT,RIGHT,RIGHT,DOWN,RIGHT EATEN
+ask 42 steps=617 score=41 jumps=0 chain=44 EATEN
+ask 43 steps=661 score=42 jumps=0 chain=9 EATEN
+ask 44 steps=670 score=43 jumps=0 chain=25 EATEN
+ask 45 steps=695 score=44 jumps=0 chain=2 EATEN
+ask 46 steps=697 score=45 jumps=0 chain=55 EATEN
+ask 47 steps=752 score=46 jumps=0 chain=12 EATEN
+ask 48 steps=764 score=47 jumps=0 chain=50 EATEN
+ask 49 steps=814 score=48 jumps=0 chain=13 EATEN
+ask 50 steps=827 score=49 jumps=0 chain=33 EATEN
+--- ask 51 steps=860 score=50 jumps=0 | CHAIN 31 RIGHT,DOWN,RIGHT,UP,UP,UP,UP,UP,RIGHT,RIGHT,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,RIGHT,RIGHT,UP,UP EATEN
+ask 52 steps=891 score=51 jumps=0 chain=53 EATEN
+ask 53 steps=944 score=52 jumps=0 chain=43 EATEN
+ask 54 steps=987 score=53 jumps=0 chain=3 EATEN
+ask 55 steps=990 score=54 jumps=0 chain=61 EATEN
+ask 56 steps=1051 score=55 jumps=0 chain=22 EATEN
+ask 57 steps=1073 score=56 jumps=0 chain=46 EATEN
+ask 58 steps=1119 score=57 jumps=0 chain=62 EATEN
+ask 59 steps=1181 score=58 jumps=0 chain=13 EATEN
+ask 60 steps=1194 score=59 jumps=0 chain=59 EATEN
+--- ask 61 steps=1253 score=60 jumps=0 | CHAIN 48 RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,RIGHT,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,RIGHT EATEN
+ask 62 steps=1301 score=61 jumps=0 chain=13 EATEN
+ask 63 steps=1314 score=62 jumps=0 chain=14 EATEN
+ask 64 steps=1328 score=63 jumps=0 chain=51 EATEN
+ask 65 steps=1379 score=64 jumps=0 chain=9 EATEN
+ask 66 steps=1388 score=65 jumps=0 chain=54 EATEN
+ask 67 steps=1442 score=66 jumps=0 chain=26 EATEN
+ask 68 steps=1468 score=67 jumps=0 chain=10 EATEN
+ask 69 steps=1478 score=68 jumps=0 chain=38 EATEN
+ask 70 steps=1516 score=69 jumps=0 chain=30 EATEN
+--- ask 71 steps=1546 score=70 jumps=0 | CHAIN 51 RIGHT,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,RIGHT,RIGHT,UP,UP,UP,UP,UP,RIGHT EATEN
+ask 72 steps=1597 score=71 jumps=0 chain=8 EATEN
+ask 73 steps=1605 score=72 jumps=0 chain=20 EATEN
+ask 74 steps=1625 score=73 jumps=0 chain=51 EATEN
+ask 75 steps=1676 score=74 jumps=0 chain=3 EATEN
+ask 76 steps=1679 score=75 jumps=0 chain=6 EATEN
+ask 77 steps=1685 score=76 jumps=0 chain=1 EATEN
+ask 78 steps=1686 score=77 jumps=0 chain=26 EATEN
+ask 79 steps=1712 score=78 jumps=0 chain=37 EATEN
+ask 80 steps=1749 score=79 jumps=0 chain=4 EATEN
+--- ask 81 steps=1753 score=80 jumps=0 | CHAIN 85 RIGHT,UP,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,RIGHT EATEN
+ask 82 steps=1838 score=81 jumps=0 chain=52 EATEN
+ask 83 steps=1890 score=82 jumps=0 chain=36 EATEN
+ask 84 steps=1926 score=83 jumps=0 chain=7 EATEN
+ask 85 steps=1933 score=84 jumps=0 chain=16 EATEN
+ask 86 steps=1949 score=85 jumps=0 chain=4 EATEN
+ask 87 steps=1953 score=86 jumps=0 chain=76 EATEN
+ask 88 steps=2029 score=87 jumps=0 chain=13 EATEN
+ask 89 steps=2042 score=88 jumps=0 chain=84 EATEN
+ask 90 steps=2126 score=89 jumps=0 chain=5 EATEN
+--- ask 91 steps=2131 score=90 jumps=0 | CHAIN 90 RIGHT,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,RIGHT,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,RIGHT EATEN
+ask 92 steps=2221 score=91 jumps=0 chain=16 EATEN
+ask 93 steps=2237 score=92 jumps=0 chain=20 EATEN
+ask 94 steps=2257 score=93 jumps=0 chain=67 EATEN
+ask 95 steps=2324 score=94 jumps=0 chain=8 EATEN
+ask 96 steps=2332 score=95 jumps=0 chain=5 EATEN
+ask 97 steps=2337 score=96 jumps=0 chain=11 EATEN
+ask 98 steps=2348 score=97 jumps=0 chain=53 EATEN
+ask 99 steps=2401 score=98 jumps=0 chain=19 EATEN
+ask 100 steps=2420 score=99 jumps=0 chain=48 EATEN
+--- ask 101 steps=2468 score=100 jumps=0 | CHAIN 105 DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,LEFT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,UP,UP,UP,UP,RIGHT,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,DOWN,RIGHT,UP,UP,UP,UP,UP,UP,RIGHT EATEN
+ask 102 steps=2573 score=101 jumps=0 chain=71 EATEN
+ask 103 steps=2644 score=102 jumps=0 chain=82 EATEN
+ask 104 steps=2726 score=103 jumps=0 chain=18 EATEN
+ask 105 steps=2744 score=104 jumps=0 chain=101 EATEN
+ask 106 steps=2845 score=105 jumps=0 chain=11 EATEN
+ask 107 steps=2856 score=106 jumps=0 chain=87 EATEN
+ask 108 steps=2943 score=107 jumps=0 chain=76 EATEN
+ask 109 steps=3019 score=108 jumps=0 chain=70 EATEN
+ask 110 steps=3089 score=109 jumps=0 chain=87 EATEN
+--- ask 111 steps=3176 score=110 jumps=0 | CHAIN 3 UP,UP,UP EATEN
+ask 112 steps=3179 score=111 jumps=0 chain=98 EATEN
+ask 113 steps=3277 score=112 jumps=0 chain=5 EATEN
+ask 114 steps=3282 score=113 jumps=0 chain=74 EATEN
+ask 115 steps=3356 score=114 jumps=0 chain=102 EATEN
+ask 116 steps=3458 score=115 jumps=0 chain=66 EATEN
+ask 117 steps=3524 score=116 jumps=0 chain=3 EATEN
+ask 118 steps=3527 score=117 jumps=0 chain=78 EATEN
+ask 119 steps=3605 score=118 jumps=0 chain=54 EATEN
+ask 120 steps=3659 score=119 jumps=0 chain=1 EATEN
+--- ask 121 steps=3660 score=120 jumps=0 | CHAIN 4 UP,UP,UP,UP EATEN
+ask 122 steps=3664 score=121 jumps=0 chain=6 EATEN
+ask 123 steps=3670 score=122 jumps=0 chain=43 EATEN
+ask 124 steps=3713 score=123 jumps=0 chain=90 EATEN
+ask 125 steps=3803 score=124 jumps=0 chain=101 EATEN
+ask 126 steps=3904 score=125 jumps=0 chain=68 EATEN
+ask 127 steps=3972 score=126 jumps=0 chain=73 EATEN
+ask 128 steps=4045 score=127 jumps=0 chain=12 EATEN
+ask 129 steps=4057 score=128 jumps=0 chain=3 EATEN
+ask 130 steps=4060 score=129 jumps=0 chain=24 EATEN
+--- ask 131 steps=4084 score=130 jumps=0 | CHAIN 1 UP EATEN
+ask 132 steps=4085 score=131 jumps=0 chain=76 EATEN
+ask 133 steps=4161 score=132 jumps=0 chain=43 EATEN
+ask 134 steps=4204 score=133 jumps=0 chain=3 EATEN
+ask 135 steps=4207 score=134 jumps=0 chain=1 EATEN
+ask 136 steps=4208 score=135 jumps=0 chain=1 EATEN
+ask 137 steps=4209 score=136 jumps=0 chain=3 EATEN
+ask 138 steps=4212 score=137 jumps=0 chain=100 EATEN
+ask 139 steps=4312 score=138 jumps=0 chain=55 EATEN
+ask 140 steps=4367 score=139 jumps=0 chain=2 EATEN
+--- ask 141 steps=4369 score=140 jumps=0 | CHAIN 1 UP EATEN
+DONE {"decider": "我(零掩码同契约)", "mode": "free", "seed": 20260929, "food": 141, "steps": 4370, "cause": "WIN 全盘吃满", "jumps": 0, "pp": 0, "elapsed": 351}

@@ -1,0 +1,104 @@
+[
+ {
+  "len": 27,
+  "food": [
+   5,
+   0
+  ],
+  "dir": {
+   "x": 0,
+   "y": 1
+  },
+  "crit": {
+   "UP": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "DOWN": "foodDist=2 space=108 danger=2",
+   "LEFT": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+   "RIGHT": "foodDist=0 space=118 danger=0"
+  }
+ },
+ {
+  "len": 35,
+  "food": [
+   5,
+   11
+  ],
+  "dir": {
+   "x": 1,
+   "y": 0
+  },
+  "crit": {
+   "UP": "foodDist=12 space=107 danger=0",
+   "DOWN": "foodDist=10 space=107 danger=0",
+   "LEFT": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "RIGHT": "foodDist=12 space=89 danger=3"
+  }
+ },
+ {
+  "len": 13,
+  "food": [
+   5,
+   0
+  ],
+  "dir": {
+   "x": 1,
+   "y": 0
+  },
+  "crit": {
+   "UP": "foodDist=12 space=132 danger=0",
+   "DOWN": "foodDist=14 space=132 danger=1",
+   "LEFT": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "RIGHT": "foodDist=14 space=124 danger=3"
+  }
+ },
+ {
+  "len": 21,
+  "food": [
+   5,
+   11
+  ],
+  "dir": {
+   "x": 0,
+   "y": 1
+  },
+  "crit": {
+   "UP": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "DOWN": "foodDist=2 space=112 danger=3",
+   "LEFT": "foodDist=2 space=124 danger=0",
+   "RIGHT": "foodDist=4 space=124 danger=0"
+  }
+ },
+ {
+  "len": 21,
+  "food": [
+   11,
+   11
+  ],
+  "dir": {
+   "x": 0,
+   "y": -1
+  },
+  "crit": {
+   "UP": "foodDist=19 space=116 danger=3",
+   "DOWN": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "LEFT": "foodDist=19 space=124 danger=1",
+   "RIGHT": "foodDist=17 space=124 danger=0"
+  }
+ },
+ {
+  "len": 21,
+  "food": [
+   11,
+   5
+  ],
+  "dir": {
+   "x": 1,
+   "y": 0
+  },
+  "crit": {
+   "UP": "foodDist=3 space=124 danger=0",
+   "DOWN": "BLOCKED: hits wall or body; foodDist=0 space=0 danger=4",
+   "LEFT": "BLOCKED: reverses into the snake neck; foodDist=0 space=0 danger=4",
+   "RIGHT": "foodDist=1 space=105 danger=3"
+  }
+ }
+]

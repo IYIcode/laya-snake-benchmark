@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Laya 决策头 · 双线实验展示</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #05050c; overflow: hidden; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif; color: #cdd0e0; }
+  .mono { font-family: Consolas, "SF Mono", Menlo, monospace; }
+
+  /* ---------- 舞台 ---------- */
+  #deck { position: relative; width: 100vw; height: 100vh; }
+  .slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: 4.2vh 5.5vw 5vh; background:
+      radial-gradient(1200px 500px at 85% -10%, rgba(47,109,246,.14), transparent 60%),
+      radial-gradient(900px 420px at -5% 110%, rgba(77,210,255,.07), transparent 60%),
+      #07070f;
+  }
+  .slide.active { display: flex; }
+  .slide.active .reveal { animation: up .55s cubic-bezier(.2,.7,.3,1) both; }
+  .slide.active .reveal:nth-child(1){animation-delay:.05s}
+  .slide.active .reveal:nth-child(2){animation-delay:.15s}
+  .slide.active .reveal:nth-child(3){animation-delay:.25s}
+  .slide.active .reveal:nth-child(4){animation-delay:.35s}
+  .slide.active .reveal:nth-child(5){animation-delay:.45s}
+  .slide.active .reveal:nth-child(6){animation-delay:.55s}
+  .slide.active .reveal:nth-child(7){animation-delay:.65s}
+  .slide.active .reveal:nth-child(8){animation-delay:.75s}
+  @keyframes up { from { opacity:0; transform: translateY(18px);} to { opacity:1; transform:none;} }
+
+  /* ---------- 通用元素 ---------- */
+  .kicker { font-size: 1.05vh; letter-spacing: .35em; color: #4dd2ff; text-transform: uppercase; margin-bottom: 1vh; }
+  h1 { font-size: 5.2vh; line-height: 1.25; color: #f2f4ff; font-weight: 800; }
+  h1 .hl { color: #4dd2ff; }
+  h2 { font-size: 3vh; color: #f2f4ff; font-weight: 700; margin-bottom: 1.6vh; }
+  h2::before { content: ""; display: inline-block; width: .6vh; height: 1.7vh; background: #2f6df6; margin-right: 1vh; vertical-align: -0.15vh; border-radius: 2px; }
+  .sub { color: #7c8098; font-size: 1.5vh; margin-top: 1.2vh; }
+  .big { font-size: 6.2vh; font-weight: 800; line-height: 1.1; }
+  .up { color: #35e08a; } .down { color: #ff6b6b; } .cyan { color: #4dd2ff; } .dim { color: #565a72; }
+  .strike { text-decoration: line-through; text-decoration-color: rgba(255,107,107,.7); text-decoration-thickness: .22vh; }
+
+  .row { display: flex; gap: 1.8vw; align-items: stretch; }
+  .col { flex: 1; min-width: 0; }
+  .card {
+    background: rgba(13,13,28,.85); border: 1px solid #1e1e3a; border-radius: 1vh;
+    padding: 1.6vh 1.4vw; height: 100%;
+  }
+  .card h3 { font-size: 1.55vh; color: #fff; margin-bottom: .7vh; font-weight: 700; }
+  .card p { font-size: 1.42vh; line-height: 1.65; color: #a9adc4; }
+  .tag { display: inline-block; font-size: 1.1vh; padding: .1vh .7vh; border-radius: 1vh; background: #14142c; color: #8fa0c8; margin-bottom: .8vh; font-family: Consolas, monospace; }
+  .tag.blue { background: rgba(47,109,246,.18); color: #7fb0ff; }
+  .tag.green { background: rgba(53,224,138,.14); color: #35e08a; }
+  .tag.red { background: rgba(255,107,107,.14); color: #ff8080; }
+  .tag.cyan { background: rgba(77,210,255,.14); color: #4dd2ff; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 1.55vh; }
+  th, td { border: 1px solid #22223e; padding: 1vh 1vw; text-align: center; }
+  th { background: #10102a; color: #9fb2e8; font-weight: 600; }
+  td:first-child, th:first-child { text-align: left; }
+  td b { color: #fff; }
+  .win { background: rgba(53,224,138,.07); }
+  .win b { color: #35e08a; }
+
+  .flow { display: flex; align-items: stretch; gap: 0; }
+  .step { flex: 1; background: rgba(13,13,28,.9); border: 1px solid #1e1e3a; border-radius: .8vh; padding: 1.1vh .6vw; position: relative; }
+  .step .n { font-family: Consolas, monospace; font-size: 1.2vh; color: #4dd2ff; }
+  .step h3 { font-size: 1.35vh; color: #fff; margin: .4vh 0; }
+  .step p { font-size: 1.15vh; color: #8b8fa8; line-height: 1.5; }
+  .arrow { display: flex; align-items: center; padding: 0 .35vw; color: #2f6df6; font-size: 1.6vh; }
+
+  /* 排行榜 */
+  .board .rk { display: flex; align-items: center; gap: 1vw; background: rgba(13,13,28,.9); border: 1px solid #1e1e3a; border-radius: .8vh; margin-bottom: .75vh; padding: .85vh 1.2vw; font-size: 1.5vh; }
+  .rk .no { width: 2.6vh; height: 2.6vh; border-radius: 50%; background: #1a1a30; color: #8890b0; display: flex; align-items: center; justify-content: center; font-family: Consolas, monospace; font-size: 1.3vh; flex: 0 0 auto; }
+  .rk.top1 .no { background: linear-gradient(135deg,#f7c948,#e8a200); color: #221a00; font-weight: 700; }
+  .rk.top2 .no { background: #9aa3bd; color: #111; }
+  .rk.top3 .no { background: #b08355; color: #fff; }
+  .rk .who { flex: 1; color: #e6e9ff; }
+  .rk .who small { color: #666d8c; margin-left: .6vw; font-size: 1.2vh; }
+  .rk .sc { font-family: Consolas, monospace; color: #4dd2ff; font-size: 1.5vh; }
+
+  /* 时间轴 */
+  .timeline { display: flex; align-items: flex-end; gap: 1.2vw; height: 22vh; margin-top: 2vh; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .bar { width: 100%; border-radius: .5vh .5vh 0 0; background: linear-gradient(180deg, #2f6df6, #1a3a80); position: relative; transition: all .6s; }
+  .bar.best { background: linear-gradient(180deg, #35e08a, #0e7a48); }
+  .bar .v { position: absolute; top: -2.6vh; left: 0; right: 0; text-align: center; font-family: Consolas, monospace; font-size: 1.5vh; color: #fff; }
+  .bar-wrap .lab { font-size: 1.25vh; color: #8b8fa8; margin-top: .7vh; text-align: center; }
+
+  /* 底部 UI */
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: .55vh; background: #12122a; z-index: 10; }
+  #prog { height: 100%; width: 0; background: linear-gradient(90deg, #2f6df6, #4dd2ff); transition: width .35s; }
+  #idx { position: fixed; right: 2vw; bottom: 1.6vh; font-family: Consolas, monospace; font-size: 1.25vh; color: #565a72; z-index: 10; }
+  #hint { position: fixed; left: 2vw; bottom: 1.6vh; font-size: 1.15vh; color: #3a3d54; z-index: 10; }
+  #brand { position: fixed; left: 2vw; top: 1.8vh; font-family: Consolas, monospace; font-size: 1.2vh; color: #3a3d54; letter-spacing: .2em; z-index: 10; }
+
+  /* 封面 */
+  .cover { justify-content: center; align-items: flex-start; }
+  .cover h1 { font-size: 6.4vh; }
+  .cover .sub { font-size: 1.9vh; }
+  .chips { display: flex; gap: 1vw; margin-top: 3vh; flex-wrap: wrap; }
+  .chip { border: 1px solid #26305a; background: rgba(20,24,48,.6); border-radius: 1.2vh; padding: 1vh 1.4vw; font-size: 1.5vh; color: #aab4dc; }
+  .chip b { color: #4dd2ff; font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- 1 封面 -->
+<section class="slide cover">
+  <div class="kicker reveal">LAYA · DECISION HEAD LAB</div>
+  <h1 class="reveal">把 Laya 当<span class="hl">决策头</span>用</h1>
+  <div class="sub reveal">浏览器 Agent × 贪吃蛇 —— 一条 322M 小模型的两条实验线</div>
+  <div class="chips reveal">
+    <div class="chip">单卡 <b>RTX 4070 Ti SUPER</b> · 零付费 API</div>
+    <div class="chip">浏览器任务 <b>0% → 62%</b></div>
+    <div class="chip">贪吃蛇进化 <b>17 → 40.8</b> 食物/局</div>
+    <div class="chip">决策延迟 <b>17–23ms</b></div>
+  </div>
+</section>
+
+<!-- 2 定位 -->
+<section class="slide">
+  <div class="kicker reveal">WHY</div>
+  <h2 class="reveal">Laya 在这里不是聊天模型，是「状态 → 动作」的决策头</h2>
+  <div class="row reveal">
+    <div class="col card"><h3>给定状态 state</h3><p>页面元素表 / 棋盘坐标 + 历史，全部序列化进上下文</p></div>
+    <div class="col" style="display:flex;align-items:center;justify-content:center;font-size:4vh;color:#2f6df6;">→</div>
+    <div class="col card"><h3>候选动作 questions</h3><p>每个候选一个选项，模型直接选，不生成自由文本</p></div>
+    <div class="col" style="display:flex;align-items:center;justify-content:center;font-size:4vh;color:#2f6df6;">→</div>
+    <div class="col card"><h3 class="up">毫秒级决策</h3><p>322M 参数，单卡推理 17–23ms/步，可以当「引擎里的 AI」跑</p></div>
+  </div>
+  <div class="sub reveal" style="margin-top:2.5vh;">同一个模型架构，两个零样本几乎做不了的任务 —— 一条线证明它能学会真实网页操作，另一条线用游戏做快速迭代实验场。</div>
+</section>
+
+<!-- 3 全景 -->
+<section class="slide">
+  <div class="kicker reveal">OVERVIEW</div>
+  <h2 class="reveal">两条实验线，一个方法论</h2>
+  <div class="row reveal" style="margin-top:.5vh;">
+    <div class="col card">
+      <span class="tag blue">LINE 1 · 生产向</span>
+      <h3>浏览器 Agent（jev-ultrafast）</h3>
+      <p>真实目标：给定网页 + 任务，选下一步操作（点哪、填什么、何时 DONE）。</p>
+      <p style="margin-top:1vh;"><b class="up">0.10 → 0.66</b> 元素命中 · <b class="up">0% → 62%</b> 真实任务完成率 · <b class="up">17–23ms</b>/步</p>
+    </div>
+    <div class="col card">
+      <span class="tag cyan">LINE 2 · 实验场</span>
+      <h3>贪吃蛇（12×12 网格）</h3>
+      <p>快速迭代：同一食物序列，6–10 种策略/模型同屏 PK，几分钟训练一轮。</p>
+      <p style="margin-top:1vh;"><b class="up">32.1 → 40.8</b> 食物/局（4 轮 RL）· 同屏对照，肉眼可见进化</p>
+    </div>
+  </div>
+  <div class="card reveal" style="margin-top:1.6vh;">
+    <p style="font-size:1.55vh;color:#c9cde4;"><b style="color:#4dd2ff;">共通的三件事：</b>① 状态表示的设计比模型大小更影响上限；② 数据里的隐性泄漏比想象更致命；③ 小模型 + 快速迭代循环，胜过「上更大模型」的直觉。</p>
+  </div>
+</section>
+
+<!-- 4 浏览器：起点 -->
+<section class="slide">
+  <div class="kicker reveal">BROWSER AGENT · 起点</div>
+  <h2 class="reveal">zero-shot 有多惨？</h2>
+  <div class="row">
+    <div class="col reveal">
+      <table>
+        <tr><th></th><th>typed-decisions<br>zero-shot</th><th>微调后</th></tr>
+        <tr><td>元素 top-1（~45 候选/页）</td><td class="down">0.10 ≈ 瞎猜</td><td class="win"><b>0.66</b></td></tr>
+        <tr><td>操作类型准确率</td><td class="down">0.54</td><td class="win"><b>0.88–0.89</b></td></tr>
+        <tr><td>16 个真实任务（3 次/个）</td><td class="down">0 %</td><td class="win"><b>62 %</b></td></tr>
+        <tr><td>单步延迟</td><td>50–200 ms</td><td class="win"><b>17–23 ms</b></td></tr>
+      </table>
+    </div>
+    <div class="col reveal" style="flex:0 0 34%;">
+      <div class="big down strike">0 %</div>
+      <div class="sub">zero-shot 真实任务完成率</div>
+      <div style="margin-top:2vh;"><div class="big up">62 %</div><div class="sub">322M 微调后 · 16 任务中 10 个 3/3 通过</div></div>
+    </div>
+  </div>
+  <div class="sub reveal" style="margin-top:1.6vh;">通过的任务：导航 / 切换 tab / checkbox / &lt;select&gt; / 搜索提交；失败集中在「输入后选建议项」、需先滚动、Google Flights 这类多步长流程。</div>
+</section>
+
+<!-- 5 管线 -->
+<section class="slide">
+  <div class="kicker reveal">BROWSER AGENT · 数据管线</div>
+  <h2 class="reveal">七步造出「会操作浏览器」的小模型</h2>
+  <div class="flow reveal">
+    <div class="step"><div class="n">01</div><h3>爬取 421 页</h3><p>Wikipedia / GitHub / HN / 表单站，保留元素表</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">02</div><h3>反生成目标 ×5244</h3><p>先选答案元素，让本地 Qwen3-8B 反写「用户会怎么说」</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">03</div><h3>真实 DONE ×700</h3><p>真点一下，记录落地页，杜绝模板泄漏</p></div>
+  </div>
+  <div class="flow reveal" style="margin-top:1.4vh;">
+    <div class="step"><div class="n">04</div><h3>中途负样本 ×659</h3><p>带历史的新目标，防止「有历史 ⇒ DONE」</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">05</div><h3>Mind2Web 7296 步</h3><p>候选重渲染成元素表，稀有操作加权</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">06</div><h3>DAgger 修正 ×177</h3><p>真实跑任务，本地 LLM 逐步裁决</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">07</div><h3>RLCD 训练</h3><p>单卡 4 epochs：421M ≈ 2h，322M ≈ 1h</p></div>
+  </div>
+  <div class="sub reveal" style="margin-top:2vh;">关键设计：标签由「执行事实」产生（反生成 + 真实落地页），而不是让老师模型解题 —— 标签干净，模型才能学到策略而不是老师的口音。</div>
+</section>
+
+<!-- 6 最大教训 -->
+<section class="slide">
+  <div class="kicker reveal">BROWSER AGENT · 最大的教训</div>
+  <h2 class="reveal">输入格式 &gt; 任何数据改动</h2>
+  <div class="row reveal">
+    <div class="col card" style="flex:0 0 44%;">
+      <span class="tag red">之前</span>
+      <h3>元素表整块塞进 state</h3>
+      <p>1024 token 窗口截断大半张表 —— 模型经常<b>根本没看到</b>该点的那个元素。</p>
+    </div>
+    <div class="col" style="display:flex;align-items:center;font-size:4vh;color:#2f6df6;">→</div>
+    <div class="col card">
+      <span class="tag green">之后</span>
+      <h3>候选移到 option list</h3>
+      <p>state 只留 title / URL / 历史 / 1.2–1.5k 字；元素进选项（label + role + 当前值），head_max_len 512 → 768。</p>
+    </div>
+  </div>
+  <div class="row reveal" style="margin-top:2vh;">
+    <div class="col card"><div class="big">0.44 <span class="up" style="font-size:3.5vh;">→ 0.51</span></div><div class="sub">Mind2Web click top-1（同数据）</div></div>
+    <div class="col card"><div class="big">6/16 <span class="up" style="font-size:3.5vh;">→ 10/16</span></div><div class="sub">真实任务套件（同数据）</div></div>
+    <div class="col card"><p style="font-size:1.5vh;">同一份数据、同一个训练配方，只改了「候选放在哪里」—— 超过任何一次数据增量的收益。</p></div>
+  </div>
+</section>
+
+<!-- 7 失败清单 -->
+<section class="slide">
+  <div class="kicker reveal">BROWSER AGENT · 踩过的坑</div>
+  <h2 class="reveal">What did not work</h2>
+  <div class="row" style="gap:1.4vw;">
+    <div class="col">
+      <div class="card reveal" style="height:auto;margin-bottom:1.2vh;"><span class="tag red">泄漏</span><h3>模板化 DONE 目标</h3><p>「打开 X 页，打开即停」→ 模型学会「一看到 stop when 就 DONE」。DONE 必须用真实落地页。</p></div>
+      <div class="card reveal" style="height:auto;"><span class="tag red">泄漏</span><h3>历史长度偏差</h3><p>DONE 样本都带 1 步历史、CLICK 都不带 → 学到「有历史 ⇒ DONE」。必须加任务中途的负样本。</p></div>
+    </div>
+    <div class="col">
+      <div class="card reveal" style="height:auto;margin-bottom:1.2vh;"><span class="tag red">负优化</span><h3>「不确定就升级给 8B/27B」</h3><p>置信度门控升级<b>反而更差</b>：27B + 300 token 思考 = 4.7s/步、0.861/0.603；322M = 21ms、0.890/0.623。</p></div>
+      <div class="card reveal" style="height:auto;"><span class="tag red">无效功</span><h3>其他</h3><p>截断页面文字省不了事（头占满序列）；<span class="mono">torch.compile</span> 遇变长 batch 逐 shape 重编译，慢 6×。</p></div>
+    </div>
+    <div class="col" style="flex:0 0 30%;">
+      <div class="card reveal" style="background:rgba(47,109,246,.10);border-color:#2a3f7a;">
+        <h3 style="color:#4dd2ff;">带走的一句话</h3>
+        <p style="font-size:1.55vh;color:#c9d2f2;">在这个任务尺度上，微调好的 322M 就是更好的决策者 —— 更大、更慢、更贵的老师并不自动等于更好的系统。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 贪吃蛇设计 -->
+<section class="slide">
+  <div class="kicker reveal">SNAKE · 实验设计</div>
+  <h2 class="reveal">贪吃蛇：同一条食物序列，所有策略同屏 PK</h2>
+  <div class="row reveal">
+    <div class="col card">
+      <h3>公平对照</h3>
+      <p>12×12 棋盘，所有选手跑<b>完全相同</b>的食物序列，直到死亡。规则智能体、搜索算法、零样本、微调、RL 全部同台，排行榜实时刷新。</p>
+    </div>
+    <div class="col card">
+      <h3>策略输入的三种「小抄」</h3>
+      <p>裸棋盘（只给坐标）→ 契约小抄（每个方向附 foodDist / space / danger 三特征）→ 序号输入（把候选编号化）。</p>
+    </div>
+    <div class="col card">
+      <h3>为什么选贪吃蛇</h3>
+      <p>训练几分钟一轮、结果肉眼可见、可无限重放 —— 一个理想的「模型行为调试器」。</p>
+    </div>
+  </div>
+  <div class="board reveal" style="margin-top:1.6vh;">
+    <div class="rk top1"><div class="no">1</div><div class="who">环契约微调 · 序号输入<small>RLCD 配方</small></div><div class="sc">存活最长</div></div>
+    <div class="rk top2"><div class="no">2</div><div class="who">RLCD 微调 · 契约小抄<small>坐标清单</small></div><div class="sc">紧随其后</div></div>
+    <div class="rk top3"><div class="no">3</div><div class="who">BFS 老师（搜索算法）<small>纯代码上界参考</small></div><div class="sc">39.7 食物/局</div></div>
+    <div class="rk"><div class="no">·</div><div class="who">零样本 · 裸棋盘<small>对照底线</small></div><div class="sc" style="color:#ff8080;">秒死</div></div>
+  </div>
+</section>
+
+<!-- 9 进化 -->
+<section class="slide">
+  <div class="kicker reveal">SNAKE · 进化曲线</div>
+  <h2 class="reveal">四轮 RL，从 32.1 到 40.8 食物/局</h2>
+  <div class="timeline reveal">
+    <div class="bar-wrap"><div class="bar" style="height:56%"><div class="v">32.1</div></div><div class="lab">gen3<br>RLCD 起点</div></div>
+    <div class="bar-wrap"><div class="bar" style="height:55%"><div class="v">31.6</div></div><div class="lab">RL 第 1 轮</div></div>
+    <div class="bar-wrap"><div class="bar" style="height:63%"><div class="v">34.8</div></div><div class="lab">RL 第 2 轮</div></div>
+    <div class="bar-wrap"><div class="bar" style="height:71%"><div class="v">39.1</div></div><div class="lab">RL 第 3 轮</div></div>
+    <div class="bar-wrap"><div class="bar best" style="height:77%"><div class="v">40.8</div></div><div class="lab">RL 第 4 轮 ★</div></div>
+  </div>
+  <div class="row reveal" style="margin-top:2vh;">
+    <div class="col card"><p style="font-size:1.45vh;">每轮 ≈ 12 局自采样（约 1 分钟）+ 策略梯度更新 —— 整条进化曲线在一个下午跑完，全程单卡。</p></div>
+    <div class="col card"><p style="font-size:1.45vh;">PPO 截断（clip 0.2）从第 3 轮起接管，避免策略梯度把熵压死；采样局均 11 食物，贪心评测到 40.8 —— 差距全在「会挑动作」而不是「看得更清」。</p></div>
+  </div>
+</section>
+
+<!-- 10 表示之争 -->
+<section class="slide">
+  <div class="kicker reveal">SNAKE · 表示之争</div>
+  <h2 class="reveal">同配方换一种表示：17.0 → 28.1 食物/局</h2>
+  <div class="row">
+    <div class="col reveal">
+      <div class="card" style="height:100%;">
+        <span class="tag">对照 · 坐标清单</span>
+        <div class="big down">17.0</div><div class="sub">gen1 同配方 · head/body/food 坐标数组</div>
+      </div>
+    </div>
+    <div class="col reveal" style="flex:0 0 10vw;display:flex;align-items:center;justify-content:center;font-size:5vh;color:#35e08a;font-weight:800;">+65%</div>
+    <div class="col reveal">
+      <div class="card" style="height:100%;border-color:#1f4d38;">
+        <span class="tag green">实验 · 网格字符串</span>
+        <div class="big up">28.1</div><div class="sub">12 行字符串盘面 · 1500 条样本 3 epochs（约 2 分钟训完）</div>
+      </div>
+    </div>
+  </div>
+  <div class="card reveal" style="margin-top:1.8vh;">
+    <p style="font-size:1.5vh;color:#c9cde4;">代价：网格输入中位 <b>257 token/步</b>（坐标清单约 200），推理 36ms/步 —— 表示是双刃剑：<b class="cyan">信息更完整，但序列更长</b>。和浏览器线「元素表塞 state 会被截断」是同一枚硬币的两面：先把「模型到底看到什么」想清楚，再谈训练。</p>
+  </div>
+</section>
+
+<!-- 11 大剧院 -->
+<section class="slide">
+  <div class="kicker reveal">SNAKE · 大剧院</div>
+  <h2 class="reveal">「Laya 大剧院」：10 位选手同台竞技</h2>
+  <div class="row">
+    <div class="col reveal" style="font-size:1.45vh;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7vh;">
+        <div class="card" style="height:auto;padding:1vh 1vw;">环契约 · 掩码通关</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">纯 RL 进化 · 调参小抄</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">RLCD 微调 · 契约小抄</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">DAgger 模仿 · 调参小抄</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">零样本 · 裸棋盘 / 契约小抄</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">纯提示词 · 报错账自觉</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">BFS 老师 · 纯代码</div>
+        <div class="card" style="height:auto;padding:1vh 1vw;">环保险 · 纯代码</div>
+      </div>
+    </div>
+    <div class="col reveal" style="flex:0 0 40%;">
+      <div class="card" style="height:100%;">
+        <p style="font-size:1.5vh;">同一食物序列、同一时刻，10 条蛇各玩各的：纯代码规则、BFS、零样本（裸盘 / 小抄）、RLCD 微调、DAgger 模仿、纯 RL 进化、纯提示词……</p>
+        <p style="font-size:1.5vh;margin-top:1vh;">谁先撞墙、谁在吃、谁在缩成一团保命 —— 排行榜实时滚动。<b style="color:#4dd2ff;">这一页就是最直观的「模型行为显微镜」。</b></p>
+      </div>
+    </div>
+  </div>
+  <div class="sub reveal" style="margin-top:1.4vh;">配套页面：同屏 PK 排行榜 · v1 vs v2 训练对照 · 真实模型观察台（逐步看原始 / 遮罩概率）· 特征贪吃蛇（不碰模型的纯代码小程序）</div>
+</section>
+
+<!-- 12 交叉方法论 -->
+<section class="slide">
+  <div class="kicker reveal">SYNTHESIS</div>
+  <h2 class="reveal">两条线，同一套方法论</h2>
+  <div class="row">
+    <div class="col card reveal">
+      <span class="tag cyan">①</span>
+      <h3>状态表示决定上限</h3>
+      <p>浏览器线：元素表挪进 option list → 6/16 → 10/16。贪吃蛇线：坐标清单换网格字符串 → 17.0 → 28.1。<b>改「看到什么」比改「怎么训」便宜得多。</b></p>
+    </div>
+    <div class="col card reveal">
+      <span class="tag cyan">②</span>
+      <h3>泄漏是隐形的</h3>
+      <p>模板目标 →「stop when ⇒ DONE」；历史长度 →「有历史 ⇒ DONE」。两边共同的解法：<b>用执行事实造标签，再加专门的中途负样本。</b></p>
+    </div>
+    <div class="col card reveal">
+      <span class="tag cyan">③</span>
+      <h3>小模型 + 快循环赢</h3>
+      <p>322M 单卡 1h 训完、21ms 决策；贪吃蛇一轮 RL 一分钟。「能不能一天迭代 10 个版本」比「模型多强」更决定项目成败。</p>
+    </div>
+  </div>
+  <div class="card reveal" style="margin-top:1.8vh;border-color:#2a3f7a;background:rgba(47,109,246,.08);">
+    <p style="font-size:1.6vh;color:#dbe3ff;">如果只记一件事：<span class="mono" style="color:#4dd2ff;">先设计「模型每一步到底看到什么」，再造干净的数据循环 —— 模型大小可以最后再谈。</span></p>
+  </div>
+</section>
+
+<!-- 13 结论 -->
+<section class="slide">
+  <div class="kicker reveal">TAKEAWAYS</div>
+  <h2 class="reveal">结论与下一步</h2>
+  <div class="row">
+    <div class="col card reveal">
+      <span class="tag green">已验证</span>
+      <h3>322M 小模型是可以「住进引擎」的决策者</h3>
+      <p>真实网页任务 62% 完成率、21ms/步、单卡复现（权重与全套脚本已开源可复跑）。它不需要 27B 老师兜底 —— 在它的任务尺度上它自己就是更好的决策者。</p>
+    </div>
+    <div class="col card reveal">
+      <span class="tag blue">下一步</span>
+      <h3>三个方向</h3>
+      <p><b>1.</b> 补强失败模式：长建议列表、滚动后分页、多步表单流；<b>2.</b> 更强的 DAgger 老师（当前 8B 已不足以带来增益）；<b>3.</b> 把蛇线验证过的「表示 A/B 测试」流程搬回浏览器线。</p>
+    </div>
+  </div>
+  <div class="card reveal" style="margin-top:1.8vh;">
+    <p style="font-size:1.55vh;color:#c9cde4;">复现入口：浏览器线 <span class="mono">huggingface.co/cklxx/laya-browser</span>（verify.py 一条命令回放真实决策）· 蛇线：本目录 laya_bridge.py + 各 HTML 观察页，本地一键起。</p>
+  </div>
+</section>
+
+<!-- 14 结尾 -->
+<section class="slide cover">
+  <div class="kicker reveal">THAT'S IT</div>
+  <h1 class="reveal">让模型<span class="hl">做选择</span>，<br>而不是写作文</h1>
+  <div class="sub reveal">小模型 · 干净数据 · 快速循环 —— 决策头路线的下一步见评论区。</div>
+  <div class="chips reveal">
+    <div class="chip">浏览器线：<b>0% → 62%</b> · 17–23ms</div>
+    <div class="chip">蛇线：<b>32.1 → 40.8</b> 食物/局</div>
+    <div class="chip">全部单卡 · 可复现</div>
+  </div>
+</section>
+
+</div>
+
+<div id="brand">LAYA DECISION HEAD LAB</div>
+<div id="bar"><div id="prog"></div></div>
+<div id="idx">1 / 14</div>
+<div id="hint">← → 空格 翻页 · F 全屏</div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+let cur = 0;
+function go(n) {
+  cur = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+  document.getElementById('idx').textContent = (cur + 1) + ' / ' + slides.length;
+  document.getElementById('prog').style.width = ((cur + 1) / slides.length * 100) + '%';
+}
+window.addEventListener('keydown', e => {
+  if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slides.length - 1);
+  else if (e.key.toLowerCase() === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+// 点击右半屏前进、左 1/4 后退（录屏鼠标演示友好）
+window.addEventListener('click', e => {
+  if (e.clientX > window.innerWidth * 0.75) go(cur + 1);
+  else if (e.clientX < window.innerWidth * 0.25) go(cur - 1);
+});
+go(0);
+</script>
+</body>
+</html>

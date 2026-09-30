@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Laya Snake AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #00e676, #00b0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+  }
+  .subtitle {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  canvas {
+    border: 2px solid #1a3a2a;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.1);
+  }
+  .panel {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 16px;
+    width: 220px;
+  }
+  .stat {
+    margin-bottom: 12px;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00e676;
+  }
+  .decision-log {
+    background: #0a0a1a;
+    border: 1px solid #1a1a2a;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: #888;
+    height: 160px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+  .decision-log .dir { color: #00e676; font-weight: bold; }
+  .decision-log .danger { color: #ff5252; }
+  .decision-log .food { color: #ffab40; }
+  .controls {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  button {
+    background: #1a2a1a;
+    color: #00e676;
+    border: 1px solid #00e67644;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  button:hover { background: #00e67622; }
+  button.active { background: #00e67633; border-color: #00e676; }
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .speed-control label { font-size: 0.7rem; color: #666; }
+  input[type="range"] {
+    flex: 1;
+    accent-color: #00e676;
+  }
+  .mode-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: bold;
+  }
+  .mode-ai { background: #00e67622; color: #00e676; }
+  .mode-manual { background: #00b0ff22; color: #00b0ff; }
+</style>
+</head>
+<body>
+
+<h1>LAYA SNAKE AI</h1>
+<div class="subtitle">Decision Model: State Classification → Action</div>
+
+<div class="container">
+  <canvas id="game" width="480" height="480"></canvas>
+  <div class="panel">
+    <div class="stat">
+      <div class="stat-label">Score</div>
+      <div class="stat-value" id="score">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Mode</div>
+      <div id="mode"><span class="mode-indicator mode-ai">AI PLAYING</span></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Decisions</div>
+      <div class="stat-value" id="decisions">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">High Score</div>
+      <div class="stat-value" id="highscore">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Decision Log</div>
+      <div class="decision-log" id="log"></div>
+    </div>
+
+    <div class="controls">
+      <button id="btnAi" class="active" onclick="setMode('ai')">AI Mode (Laya)</button>
+      <button id="btnManual" onclick="setMode('manual')">Manual (Arrow Keys)</button>
+      <button onclick="resetGame()">Reset</button>
+      <div class="speed-control">
+        <label>Speed</label>
+        <input type="range" id="speed" min="1" max="20" value="10">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const GRID = 24;
+const CELL = canvas.width / GRID;
+
+let snake, food, direction, nextDirection, score, highScore = 0;
+let decisionCount = 0;
+let mode = 'ai';
+let gameLoop = null;
+let alive = true;
+
+const logEl = document.getElementById('log');
+
+function init() {
+  snake = [{x: 12, y: 12}, {x: 11, y: 12}, {x: 10, y: 12}];
+  direction = {x: 1, y: 0};
+  nextDirection = {x: 1, y: 0};
+  score = 0;
+  decisionCount = 0;
+  alive = true;
+  placeFood();
+  updateUI();
+  logEl.innerHTML = '';
+  addLog('System initialized', 'dir');
+  addLog('Decision model: <span class="dir">Laya-style</span>', '');
+  addLog('Mode: <span class="dir">AI auto-play</span>', '');
+}
+
+function placeFood() {
+  do {
+    food = {
+      x: Math.floor(Math.random() * GRID),
+      y: Math.floor(Math.random() * GRID)
+    };
+  } while (snake.some(s => s.x === food.x && s.y === food.y));
+}
+
+function isSafe(x, y) {
+  if (x < 0 || x >= GRID || y < 0 || y >= GRID) return false;
+  if (snake.some(s => s.x === x && s.y === y)) return false;
+  return true;
+}
+
+function floodFill(startX, startY) {
+  const visited = new Set();
+  const queue = [{x: startX, y: startY}];
+  visited.add(`${startX},${startY}`);
+  let count = 0;
+  const snakeSet = new Set(snake.map(s => `${s.x},${s.y}`));
+
+  while (queue.length > 0) {
+    const {x, y} = queue.shift();
+    count++;
+    for (const [dx, dy] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+      const nx = x + dx, ny = y + dy;
+      const key = `${nx},${ny}`;
+      if (nx >= 0 && nx < GRID && ny >= 0 && ny < GRID && !visited.has(key) && !snakeSet.has(key)) {
+        visited.add(key);
+        queue.push({x: nx, y: ny});
+      }
+    }
+    if (count > GRID * GRID * 0.5) return count;
+  }
+  return count;
+}
+
+function manhattan(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+// Laya-style decision model: classify state → pick action
+// Input features: food direction, danger proximity, available space, body position
+// Output: one of 4 actions (up/down/left/right)
+function layaDecide() {
+  const head = snake[0];
+  const dirs = [
+    {x: 0, y: -1, name: 'UP'},
+    {x: 0, y: 1, name: 'DOWN'},
+    {x: -1, y: 0, name: 'LEFT'},
+    {x: 1, y: 0, name: 'RIGHT'}
+  ];
+
+  const candidates = [];
+
+  for (const d of dirs) {
+    // no reverse
+    if (d.x === -direction.x && d.y === -direction.y) continue;
+
+    const nx = head.x + d.x;
+    const ny = head.y + d.y;
+
+    if (!isSafe(nx, ny)) {
+      candidates.push({...d, score: -Infinity, reason: 'WALL/BODY'});
+      continue;
+    }
+
+    // Feature 1: distance to food after move
+    const foodDist = manhattan({x: nx, y: ny}, food);
+
+    // Feature 2: available space (flood fill)
+    const space = floodFill(nx, ny);
+
+    // Feature 3: danger proximity (how many neighbors are blocked)
+    let dangerCount = 0;
+    for (const [dx2, dy2] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+      if (!isSafe(nx + dx2, ny + dy2)) dangerCount++;
+    }
+
+    // Feature 4: tail distance (can we reach our tail for safety)
+    const tail = snake[snake.length - 1];
+    const tailDist = manhattan({x: nx, y: ny}, tail);
+
+    // Decision scoring (like a trained classifier's output)
+    let s = 0;
+    s -= foodDist * 2.0;        // prefer closer to food
+    s += space * 0.5;           // prefer more open space
+    s -= dangerCount * 3.0;     // avoid tight spots
+
+    // survival mode: if space is too small, heavily penalize
+    if (space < snake.length) s -= 50;
+
+    // if we can see our tail, slight bonus (escape route)
+    if (tailDist < GRID) s += 1;
+
+    candidates.push({...d, score: s, reason: `dist=${foodDist} space=${space} danger=${dangerCount}`});
+  }
+
+  // pick best
+  candidates.sort((a, b) => b.score - a.score);
+  const best = candidates[0];
+
+  if (!best || best.score === -Infinity) {
+    // no safe move
+    return null;
+  }
+
+  decisionCount++;
+  addLog(
+    `#${decisionCount} → <span class="dir">${best.name}</span> | ` +
+    `<span class="food">food_dist=${manhattan(head, food)}</span> ` +
+    `space=${best.reason.match(/space=(\d+)/)?.[1] || '?'}`,
+    best.reason.includes('danger=3') ? 'danger' : ''
+  );
+
+  return {x: best.x, y: best.y};
+}
+
+function addLog(msg, cls) {
+  const line = document.createElement('div');
+  line.innerHTML = msg;
+  if (cls) line.className = cls;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+  // keep last 50 lines
+  while (logEl.children.length > 50) logEl.removeChild(logEl.firstChild);
+}
+
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('decisions').textContent = decisionCount;
+  document.getElementById('highscore').textContent = highScore;
+}
+
+function draw() {
+  // background
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // grid lines (subtle)
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= GRID; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * CELL, 0);
+    ctx.lineTo(i * CELL, canvas.height);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, i * CELL);
+    ctx.lineTo(canvas.width, i * CELL);
+    ctx.stroke();
+  }
+
+  // food
+  ctx.fillStyle = '#ff5252';
+  ctx.shadowColor = '#ff5252';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(food.x * CELL + CELL/2, food.y * CELL + CELL/2, CELL/2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // snake
+  snake.forEach((seg, i) => {
+    const t = i / snake.length;
+    const r = Math.round(0 + t * 10);
+    const g = Math.round(230 - t * 130);
+    const b = Math.round(118 - t * 60);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    const pad = i === 0 ? 1 : 2;
+    ctx.fillRect(seg.x * CELL + pad, seg.y * CELL + pad, CELL - pad*2, CELL - pad*2);
+
+    if (i === 0) {
+      // eyes
+      ctx.fillStyle = '#fff';
+      const ex = seg.x * CELL + CELL/2;
+      const ey = seg.y * CELL + CELL/2;
+      const edx = direction.x * 3;
+      const edy = direction.y * 3;
+      ctx.beginPath();
+      ctx.arc(ex + edx - 3, ey + edy - 2, 2, 0, Math.PI * 2);
+      ctx.arc(ex + edx + 3, ey + edy - 2, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // game over overlay
+  if (!alive) {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff5252';
+    ctx.font = 'bold 36px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 20);
+    ctx.fillStyle = '#888';
+    ctx.font = '16px Segoe UI';
+    ctx.fillText(`Score: ${score} | Decisions: ${decisionCount}`, canvas.width/2, canvas.height/2 + 20);
+    ctx.fillText('Press Reset or Space to restart', canvas.width/2, canvas.height/2 + 50);
+  }
+}
+
+function step() {
+  if (!alive) return;
+
+  if (mode === 'ai') {
+    const decision = layaDecide();
+    if (!decision) {
+      alive = false;
+      if (score > highScore) highScore = score;
+      addLog('<span class="danger">DEAD - No safe moves!</span>', 'danger');
+      updateUI();
+      draw();
+      return;
+    }
+    nextDirection = decision;
+  }
+
+  direction = nextDirection;
+  const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+
+  // collision
+  if (!isSafe(head.x, head.y)) {
+    alive = false;
+    if (score > highScore) highScore = score;
+    addLog('<span class="danger">DEAD - Collision!</span>', 'danger');
+    updateUI();
+    draw();
+    return;
+  }
+
+  snake.unshift(head);
+
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    addLog(`<span class="food">FOOD eaten! Score: ${score}</span>`, 'food');
+    placeFood();
+  } else {
+    snake.pop();
+  }
+
+  updateUI();
+  draw();
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnAi').classList.toggle('active', m === 'ai');
+  document.getElementById('btnManual').classList.toggle('active', m === 'manual');
+  document.getElementById('mode').innerHTML = m === 'ai'
+    ? '<span class="mode-indicator mode-ai">AI PLAYING</span>'
+    : '<span class="mode-indicator mode-manual">MANUAL</span>';
+}
+
+function resetGame() {
+  if (gameLoop) clearInterval(gameLoop);
+  init();
+  draw();
+  startLoop();
+}
+
+function startLoop() {
+  const speed = document.getElementById('speed').value;
+  if (gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(step, Math.max(30, 300 - speed * 15));
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (!alive) resetGame();
+    return;
+  }
+  if (mode !== 'manual') return;
+  const map = {
+    ArrowUp: {x: 0, y: -1},
+    ArrowDown: {x: 0, y: 1},
+    ArrowLeft: {x: -1, y: 0},
+    ArrowRight: {x: 1, y: 0}
+  };
+  if (map[e.key]) {
+    const nd = map[e.key];
+    if (nd.x !== -direction.x || nd.y !== -direction.y) {
+      nextDirection = nd;
+    }
+    e.preventDefault();
+  }
+});
+
+document.getElementById('speed').addEventListener('input', startLoop);
+
+init();
+draw();
+startLoop();
+</script>
+</body>
+</html>
