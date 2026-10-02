@@ -87,7 +87,10 @@ python -m http.server 8895
 - 含本机路径的运行期日志（`finetune.log`、`v3_grid.log`、`bridge*.log` 等，已列入 `.gitignore`）
 
 入库合计约 **84MB**，最大单文件 `_tune_runs/look2.json`（17MB），无需 Git LFS。
-需要权重或原始训练日志可以开 issue。
+
+**微调权重另外发布在 Release 里**（7 个 checkpoint × 1.57GB，GitHub 单文件上限 100MB 放不进仓库）：
+<https://github.com/IYIcode/laya-snake-benchmark/releases/tag/weights-v1>
+每代的身份、成绩、组装与加载方式见 [`WEIGHTS.md`](WEIGHTS.md)。
 
 ---
 
