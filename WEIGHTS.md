@@ -87,3 +87,22 @@ model.load_state_dict(weights, strict=True)
 - 含本机路径的运行期日志
 
 需要以上任何一项，开 issue 即可。
+
+## 六、完整性校验（sha256）
+
+上传后逐个与本地文件比对过，GitHub 返回的 digest 全部一致。下载后可自查：
+
+```bash
+sha256sum <下载的文件>     # Windows: certutil -hashfile <文件> SHA256
+```
+
+| 资产 | 体积 | sha256 |
+|---|---|---|
+| `checkpoints-configs.zip` | 0.00 GB | `006d07f5e11d3fb2d89e5ea75de5ded200f3e204d8dee0546266905c0c635533` |
+| `laya_snake_ft__model.safetensors` | 1.57 GB | `55f84319060a40d948dff073beccaa4ea6f81994203a8b7323d052f079bf1183` |
+| `laya_snake_v2_gen1__model.safetensors` | 1.57 GB | `e3d7e1fba16a1374866ceac17b1581bd89126a0edf9782783f606397885363fe` |
+| `laya_snake_v2_gen2__model.safetensors` | 1.57 GB | `4caf322924e6f2dcdcc2bf46fa00b4ca652b0f77da9b4ca9efcd91c8cbf8ca86` |
+| `laya_snake_v2_gen3__model.safetensors` | 1.57 GB | `4471bae3709a209c6f97d7f88d9ed27e1c02a089b17e95ed8f6a2b1c7e99fe46` |
+| `laya_snake_v2_gen4__model.safetensors` | 1.57 GB | `26e2b5dda42dab66cc84c8a09d2dd7a747d79d9e4241ab0792262c6758f6362f` |
+| `laya_snake_v2_gen5__model.safetensors` | 1.57 GB | `28df2153ed6ddb339417b84c300496b63e99db6afcacd115a024b07d33f1c13a` |
+| `laya_snake_v3_grid__model.safetensors` | 1.57 GB | `65324778f6fba5583c804d5536de79ac080738288bf3972ed96767025670b3b6` |
